@@ -1,112 +1,87 @@
-#include <stdio.h>
-#include <string.h>
 #include "wiegand_reader.h"
-#include "esp_log.h"
 #include "esp_timer.h"
-#include "freertos/task.h"
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 
-static const char *TAG = "WIEGAND_DRV";
+static const char *TAG = "WIEGAND_DRIVER";
 
-static portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-static volatile uint64_t bit_holder = 0;
-static volatile int bit_count = 0;
-static volatile uint64_t last_bit_time = 0;
-static QueueHandle_t result_queue = NULL;
+extern QueueHandle_t wiegand_reader_queue;
 
-// ISR para flanco descendente en D0 (Bit 0)
-static void IRAM_ATTR isr_handler_d0(void* arg) {
-    portENTER_CRITICAL_ISR(&mux);
-    bit_holder <<= 1;
-    bit_count++;
-    last_bit_time = esp_timer_get_time();
-    portEXIT_CRITICAL_ISR(&mux);
+typedef struct {
+  uint64_t bit_buffer;
+  volatile int bit_count;
+  volatile uint64_t last_bit_time_us;
+  portMUX_TYPE mux;
+} wiegand_context_t;
+
+static wiegand_context_t *ctx = NULL;
+
+static void IRAM_ATTR wiegand_isr_handler(void* arg) {
+  uint32_t bit_val = (uint32_t)arg;
+  portENTER_CRITICAL_ISR(&ctx->mux);
+  ctx->bit_buffer = (ctx->bit_buffer << 1) | bit_val;
+  ctx->bit_count++;
+  ctx->last_bit_time_us = esp_timer_get_time();
+  portEXIT_CRITICAL_ISR(&ctx->mux);
 }
 
-// ISR para flanco descendente en D1 (Bit 1)
-static void IRAM_ATTR isr_handler_d1(void* arg) {
-    portENTER_CRITICAL_ISR(&mux);
-    bit_holder = (bit_holder << 1) | 1;
-    bit_count++;
-    last_bit_time = esp_timer_get_time();
-    portEXIT_CRITICAL_ISR(&mux);
-}
+void wiegand_monitor_task(void *pvParameters) {
+  wiegand_card_t cardData;
+    
+  while (1) {
+    uint64_t now = esp_timer_get_time();
 
-static void decode_wiegand(uint64_t raw_bits, int count) {
-    wiegand_result_t result = {
-        .raw_data = raw_bits,
-        .bit_count = count,
-        .format = (wiegand_format_t)count,
-        .full_id = 0,
-        .facility_code = 0,
-        .card_id = 0
-    };
+    if (ctx->bit_count > 0 && (now - ctx->last_bit_time_us) > 50000) {
+      uint64_t raw; 
+      int count;
 
-    if (count == 26) {
-        // Wiegand 26: P (1b) + Facility (8b) + CardID (16b) + P (1b)
-        // Full ID son los 24 bits centrales
-        result.full_id = (raw_bits >> 1) & 0xFFFFFF;
-        result.facility_code = (raw_bits >> 17) & 0xFF;
-        result.card_id = (raw_bits >> 1) & 0xFFFF;
-    } 
-    else if (count == 34) {
-        // Wiegand 34: P (1b) + Facility (16b) + CardID (16b) + P (1b)
-        // Full ID son los 32 bits centrales
-        result.full_id = (raw_bits >> 1) & 0xFFFFFFFF;
-        result.facility_code = (raw_bits >> 17) & 0xFFFF;
-        result.card_id = (raw_bits >> 1) & 0xFFFF;
-    } 
-    else {
-        result.format = WIEGAND_UNKNOWN;
-        result.full_id = raw_bits;
+      portENTER_CRITICAL(&ctx->mux);
+      raw = ctx->bit_buffer; 
+      count = ctx->bit_count;
+      ctx->bit_buffer = 0; 
+      ctx->bit_count = 0;
+      portEXIT_CRITICAL(&ctx->mux);
+
+      cardData.raw_bits = raw;
+      cardData.bit_count = count;
+            
+      if (count == 26) {
+        cardData.format = WIEGAND_FORMAT_W26;
+        cardData.full_id = (raw >> 1) & 0xFFFFFF;      
+        cardData.facility_code = (raw >> 17) & 0xFF;   
+        cardData.card_id = (raw >> 1) & 0xFFFF;
+      } else {
+        cardData.format = WIEGAND_FORMAT_UNKNOWN;
+        cardData.full_id = raw;
+      }
+
+      if (xQueueSend(wiegand_reader_queue, &cardData, 0) != pdPASS) {
+        ESP_LOGW(TAG, "Cola llena, tarjeta descartada");
+      }
     }
-
-    xQueueSend(result_queue, &result, 0);
+    vTaskDelay(pdMS_TO_TICKS(20));
+  }
 }
 
-static void wiegand_internal_task(void *pvParameters) {
-    while (1) {
-        uint64_t now = esp_timer_get_time();
-        uint64_t bits_to_process = 0;
-        int count_to_process = 0;
+esp_err_t wiegand_init(const wiegand_config_t *config) {
+  ctx = calloc(1, sizeof(wiegand_context_t));
+  if (!ctx) return ESP_ERR_NO_MEM;
+    
+  ctx->mux = (portMUX_TYPE)portMUX_INITIALIZER_UNLOCKED;
 
-        portENTER_CRITICAL(&mux);
-        // Si han pasado más de 50ms desde el último pulso, procesar trama
-        if (bit_count > 0 && (now - last_bit_time) > 50000) {
-            bits_to_process = bit_holder;
-            count_to_process = bit_count;
-            bit_holder = 0;
-            bit_count = 0;
-        }
-        portEXIT_CRITICAL(&mux);
+  gpio_config_t io_conf = {
+    .intr_type = GPIO_INTR_NEGEDGE,
+    .mode = GPIO_MODE_INPUT,
+    .pin_bit_mask = (1ULL << config->gpio_d0) | (1ULL << config->gpio_d1),
+    .pull_up_en = GPIO_PULLUP_ENABLE,
+  };
 
-        if (count_to_process > 0) {
-            decode_wiegand(bits_to_process, count_to_process);
-        }
+  gpio_config(&io_conf);
+    
+  gpio_install_isr_service(0);
+  gpio_isr_handler_add(config->gpio_d0, wiegand_isr_handler, (void*)0);
+  gpio_isr_handler_add(config->gpio_d1, wiegand_isr_handler, (void*)1);
 
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-}
-
-esp_err_t wiegand_reader_init(const wiegand_config_t *config, QueueHandle_t *out_queue) {
-    if (!config || !out_queue) return ESP_ERR_INVALID_ARG;
-
-    result_queue = xQueueCreate(config->queue_size, sizeof(wiegand_result_t));
-    if (!result_queue) return ESP_ERR_NO_MEM;
-    *out_queue = result_queue;
-
-    gpio_config_t io_conf = {
-        .intr_type = GPIO_INTR_NEGEDGE,
-        .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = (1ULL << config->pin_d0) | (1ULL << config->pin_d1),
-        .pull_up_en = GPIO_PULLUP_ENABLE,
-    };
-    gpio_config(&io_conf);
-
-    gpio_install_isr_service(0); 
-    gpio_isr_handler_add(config->pin_d0, isr_handler_d0, NULL);
-    gpio_isr_handler_add(config->pin_d1, isr_handler_d1, NULL);
-
-    xTaskCreate(wiegand_internal_task, "wiegand_task", 3072, NULL, config->task_priority, NULL);
-
-    return ESP_OK;
+  return ESP_OK;
 }

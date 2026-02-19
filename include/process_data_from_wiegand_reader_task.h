@@ -1,0 +1,6 @@
+#ifndef PROCESS_DATA_FROM_WIEGAND_READER_TASK_H
+#define PROCESS_DATA_FROM_WIEGAND_READER_TASK_H
+
+void process_data_from_wiegand_reader_task(void *pvParameters);
+
+#endif

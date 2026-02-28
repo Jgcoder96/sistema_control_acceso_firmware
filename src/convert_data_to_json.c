@@ -7,7 +7,7 @@ char* packet_to_json(app_packet_t packet) {
   if (root == NULL) return NULL;
 
   cJSON_AddNumberToObject(root, "layer", packet.layer);
-  cJSON_AddNumberToObject(root, "card_id", packet.card_id);
+  cJSON_AddNumberToObject(root, "card_id", packet.payload.card_id);
 
   char mac_src[18];
   snprintf(mac_src, sizeof(mac_src), "%02X:%02X:%02X:%02X:%02X:%02X", 

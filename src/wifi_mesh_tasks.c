@@ -5,8 +5,9 @@
 #include "mqtt_manager.h"
 #include "wifi_mesh_transmission.h"
 #include "mqtt_publisher.h"
+#include "nodeLogic.h"
 
-//static const char *TAG = "WIFI_MESH_TASKS";
+static const char *TAG = "WIFI_MESH_TASKS";
 
 bool is_mesh_connected = false;
 int my_mesh_layer = -1;
@@ -54,22 +55,33 @@ void mesh_receiver_task(void *arg) {
 }
 
 void mesh_processor_task(void *arg) {
-  mesh_packet_t q_msg;
+  mesh_packet_t mesh_packet;
+  
   while (1) {
-    if (xQueueReceive(mesh_rx_queue, &q_msg, portMAX_DELAY) == pdTRUE) {
-      if (q_msg.len != sizeof(app_packet_t)) continue;
+    if (xQueueReceive(mesh_rx_queue, &mesh_packet, portMAX_DELAY) == pdTRUE) {
+            
+      if (mesh_packet.len != sizeof(app_packet_t)) {
+        ESP_LOGE(TAG, "Tamaño de paquete inválido: %d", mesh_packet.len);
+        continue;
+      }
 
-      app_packet_t *msg = (app_packet_t *)q_msg.data;
+      app_packet_t *msg = (app_packet_t *)mesh_packet.data;
 
       switch (msg->type) {
         case CHILD_TO_ROOT:
-          mqtt_publisher("mesh/config", *msg);
+          handle_child_to_root(msg);
           break;
+
         case ROOT_TO_ALL_CHILDREN:
+          handle_root_to_all_children(msg);
           break;
+
         case ROOT_TO_CHILD:
-          if (memcmp(msg->destination_mac, my_mac, 6) == 0) {
-          }
+          handle_root_to_child(msg, my_mac);
+          break;
+
+        default:
+          ESP_LOGD(TAG, "Tipo de mensaje no manejado: %d", msg->type);
           break;
       }
     }

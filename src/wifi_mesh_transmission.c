@@ -2,7 +2,7 @@
 
 //static const char *TAG = "WIFI_MESH_TRANSMISSION";
 
-static void send_mesh_packet(app_packet_t *packet, type_t type, const uint8_t *destination_mac, const char *payload) {
+static void send_mesh_packet(app_packet_t *packet, type_mesh_t type, const uint8_t *destination_mac, const char *payload) {
   app_packet_t app_packet = *packet;
   app_packet.type = type;
 
@@ -32,6 +32,6 @@ void send_downstream(app_packet_t *data) {
 
   if (esp_mesh_get_routing_table(route_table, sizeof(route_table), &route_size) == ESP_OK && route_size > 1) {
     snprintf(buf, sizeof(buf), "[ROOT (capa: %d) -> HIJO]", data->layer);
-    send_mesh_packet(data, ROOT_TO_CHILD, route_table[1].addr, buf);
+    send_mesh_packet(data, ROOT_TO_CHILD, data->destination_mac, buf);
   }
 }

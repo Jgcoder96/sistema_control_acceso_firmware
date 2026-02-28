@@ -24,13 +24,9 @@ void process_data_from_wiegand_reader_task(void *pvParameters) {
       app_packet_t data = {0};
       memcpy(data.source_mac, my_mac, 6);
       data.layer = my_mesh_layer;
-      data.card_id = card.full_id;
+      data.payload.card_id = card.full_id;
 
-      if (!is_node_root ) {
-        send_upstream(&data);
-      } else {
-        mqtt_publisher(PUBLISH_IN_TOPIC_CARD_READING, data);
-      }
+      send_upstream(&data);
     }
   }
 }

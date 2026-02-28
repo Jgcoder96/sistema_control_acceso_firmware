@@ -14,17 +14,26 @@ typedef struct {
 } mesh_packet_t;
 
 typedef enum {
-    CHILD_TO_ROOT = 1,        
-    ROOT_TO_ALL_CHILDREN = 2, 
-    ROOT_TO_CHILD = 3        
-} type_t;
+  CHILD_TO_ROOT = 1,        
+  ROOT_TO_ALL_CHILDREN = 2, 
+  ROOT_TO_CHILD = 3        
+} type_mesh_t;
+
+typedef enum {
+  MSG_TYPE_CARD,     
+  MSG_TYPE_CONFIG 
+} app_msg_type_t;
 
 typedef struct {
-  type_t type;                 
+  type_mesh_t type;        
   uint8_t source_mac[6];      
   uint8_t destination_mac[6];  
   int layer;                   
-  uint64_t  card_id;          
+    
+  union {
+    uint64_t card_id;        
+    char accion[16];         
+  } payload;                   
 } app_packet_t;
 
 extern bool is_mesh_connected;      

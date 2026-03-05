@@ -3,8 +3,8 @@
 
 #include "wiegand_types.h"
 
-#define WIEGAND_GPIO_D0         GPIO_NUM_4
-#define WIEGAND_GPIO_D1         GPIO_NUM_5
+#define WIEGAND_GPIO_D0         GPIO_NUM_5
+#define WIEGAND_GPIO_D1         GPIO_NUM_6
 
 #define WIEGAND_QUEUE_LENGTH    10
 #define WIEGAND_DRIVER_PRIO     12  

@@ -4,7 +4,8 @@
 
 #include "wifi_mesh_tasks.h"
 #include "wifi_mesh_transmission.h"
-#include "nodeLogic.h"
+#include "wifi_mesh_node_logic.h"
+#include "app_types.h"
 
 static const char *TAG = "DEVICE_CONFIG";
 

@@ -1,6 +1,6 @@
 #ifndef WIEGAND_INIT_H
 #define WIEGAND_INIT_H
 
-void wiegand_reader_init(void);
+void wiegand_init(void);
 
 #endif

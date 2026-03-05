@@ -2,10 +2,8 @@
 #include "freertos/queue.h"
 #include "mqtt_client.h"
 
-#include "mqtt_config.h"
-#include "mqtt_publisher.h"
+#include "app_types.h"
 #include "wiegand_types.h"
-#include "wifi_mesh_tasks.h"
 #include "wifi_mesh_transmission.h"
 
 extern QueueHandle_t wiegand_reader_queue;
@@ -15,7 +13,7 @@ extern int my_mesh_layer;
 extern uint8_t my_mac[6];
 extern bool is_node_root;
 
-void process_data_from_wiegand_reader_task(void *pvParameters) {
+void wiegand_process_data_task(void *pvParameters) {
   wiegand_card_t card;
 
   while (1) {    

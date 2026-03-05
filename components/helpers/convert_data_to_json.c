@@ -1,6 +1,5 @@
 #include "cJSON.h"
-
-#include "wifi_mesh_tasks.h"
+#include "app_types.h"
 
 char* packet_to_json(app_packet_t packet) {
   cJSON *root = cJSON_CreateObject();

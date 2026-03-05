@@ -6,7 +6,7 @@
 #include "nvs_flash.h"
 #include <string.h>
 
-#include "config.h"
+#include "wifi_mesh_config.h"
 #include "wifi_mesh_event_handler.h"
 #include "wifi_mesh_init.h"
 #include "wifi_mesh_setup.h"

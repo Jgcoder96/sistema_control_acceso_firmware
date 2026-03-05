@@ -5,7 +5,9 @@
 #include "mqtt_manager.h"
 #include "wifi_mesh_transmission.h"
 #include "mqtt_publisher.h"
-#include "nodeLogic.h"
+#include "wifi_mesh_node_logic.h"
+#include "app_types.h"
+#include "wifi_mesh_tasks.h"
 
 static const char *TAG = "WIFI_MESH_TASKS";
 

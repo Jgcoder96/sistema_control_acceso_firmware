@@ -7,7 +7,7 @@
 
 void app_main(void) {
 
-  wiegand_reader_init();
+  wiegand_init();
 
   wifi_mesh_setup();
 

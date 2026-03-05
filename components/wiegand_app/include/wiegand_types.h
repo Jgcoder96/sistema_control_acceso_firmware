@@ -1,7 +1,6 @@
 #ifndef WIEGAND_TYPES_H
 #define WIEGAND_TYPES_H
 
-#include <stdint.h>
 #include "driver/gpio.h"
 
 typedef enum {

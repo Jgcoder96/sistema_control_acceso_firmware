@@ -3,6 +3,7 @@
 
 #include "wifi_mesh_init.h"
 #include "wifi_mesh_tasks.h"
+#include "app_types.h"
 
 static const char *TAG = "WIFI_MESH_INIT";
 

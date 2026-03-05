@@ -1,8 +1,8 @@
 #include "esp_log.h"
-#include "wifi_mesh_tasks.h"
+#include "app_types.h"
 #include "mqtt_publisher.h"
 
-static const char *TAG = "NODE_LOGIC";
+static const char *TAG = "WIFI_MESH_NODE_LOGIC";
 
 void handle_child_to_root(const app_packet_t *msg) {
   mqtt_publisher("mesh/config", *msg);

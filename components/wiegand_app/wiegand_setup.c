@@ -3,13 +3,15 @@
 #include "wiegand_internal.h"
 #include "wiegand_setup.h"
 
+// static const char *TAG = "WIEGAND_SETUP";
+
 wiegand_context_t *g_wiegand_ctx = NULL;
 
-static void IRAM_ATTR wiegand_isr_handler(void* arg) {
+static void IRAM_ATTR wiegand_isr_handler(void* received_bit) {
   if (g_wiegand_ctx == NULL) return;
-  uint32_t bit_val = (uint32_t)arg;
+  uint32_t value_bit = (uint32_t)received_bit;
   portENTER_CRITICAL_ISR(&g_wiegand_ctx->mux);
-  g_wiegand_ctx->bit_buffer = (g_wiegand_ctx->bit_buffer << 1) | bit_val;
+  g_wiegand_ctx->bit_buffer = (g_wiegand_ctx->bit_buffer << 1) | value_bit;
   g_wiegand_ctx->bit_count++;
   g_wiegand_ctx->last_bit_time_us = esp_timer_get_time();
   portEXIT_CRITICAL_ISR(&g_wiegand_ctx->mux);

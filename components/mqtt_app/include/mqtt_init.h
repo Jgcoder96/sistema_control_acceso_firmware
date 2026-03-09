@@ -1,6 +1,14 @@
 #ifndef MQTT_INIT_H
 #define MQTT_INIT_H
 
+#define MQTT_SUBSCRIPTION_QUEUE_LENGTH      10
+
+#define MQTT_MANAGEMENT_TASK_PRIO           5
+#define MQTT_MANAGEMENT_TASK_SIZE           4096 
+
+#define MQTT_SUBSCRIPTION_HANDLER_TASK_PRIO 5
+#define MQTT_SUBSCRIPTION_HANDLER_TASK_SIZE 4096
+
 void mqtt_init(void);
 
 #endif

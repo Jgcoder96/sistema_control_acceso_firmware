@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef WIFI_MESH_CONFIG_H
+#define WIFI_MESH_CONFIG_H
 
 #include <stdint.h>
 
@@ -12,8 +12,6 @@
 #define MESH_ID_BYTES       { 0x77, 0x77, 0x77, 0x77, 0x77, 0x77 }
 
 
-#define TX_INTERVAL_MS      10000              
-#define RX_QUEUE_SIZE       10                  
-#define STACK_SIZE_TASKS    4096               
+#define TX_INTERVAL_MS      10000                         
 
 #endif

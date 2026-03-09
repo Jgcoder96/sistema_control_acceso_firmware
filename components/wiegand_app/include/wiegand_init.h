@@ -1,6 +1,14 @@
 #ifndef WIEGAND_INIT_H
 #define WIEGAND_INIT_H
 
+#define WIEGAND_READER_QUEUE_LENGTH       10
+
+#define WIEGAND_MONITOR_TASK_PRIO         12
+#define WIEGAND_MONITOR_TASK_SIZE         4096 
+
+#define WIEGAND_PROCESS_DATA_TASK_PRIO    10 
+#define WIEGAND_PROCESS_DATA_TASK_SIZE    4096
+
 void wiegand_init(void);
 
 #endif

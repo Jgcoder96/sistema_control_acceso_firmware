@@ -6,6 +6,8 @@
 #include "wiegand_types.h"
 #include "wifi_mesh_transmission.h"
 
+// static const char *TAG = "WIEGAND_PROCESS_DATA_TASK";
+
 extern QueueHandle_t wiegand_reader_queue;
 
 extern bool is_mesh_connected;

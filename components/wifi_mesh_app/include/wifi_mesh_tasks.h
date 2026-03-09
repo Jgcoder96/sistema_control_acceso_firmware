@@ -1,5 +1,5 @@
-#ifndef MESH_LOGIC_H
-#define MESH_LOGIC_H
+#ifndef WIFI_MESH_TASKS_H
+#define WIFI_MESH_TASKS_H
 
 #include <stdbool.h> 
 #include "esp_mesh.h"

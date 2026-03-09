@@ -12,9 +12,11 @@ static const char *TAG = "MQTT_MANAGER";
 
 extern bool is_internet_available;
 extern bool is_node_root;
+
 extern QueueHandle_t mqtt_subscription_queue;
 
 bool mqtt_is_started = false;
+
 esp_mqtt_client_handle_t client = NULL;
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
@@ -56,11 +58,11 @@ void mqtt_management_task(void *pvParameters) {
   while (1) {
     bool condition_met = (is_internet_available && is_node_root);
       if (condition_met && !mqtt_is_started) {
-        ESP_LOGI(TAG, "Internet y Root OK. Iniciando MQTT...");
+        ESP_LOGI(TAG, "Dispositivo elegido como root y cuenta con conexión a Internet. Iniciando MQTT...");
         esp_mqtt_client_start(client);
         mqtt_is_started = true;
       } else if (!condition_met && mqtt_is_started) {
-        ESP_LOGW(TAG, "Internet o Root perdidos. Deteniendo MQTT...");
+        ESP_LOGW(TAG, "El dispositivo ha perdido el root o la conexión a Internet. Deteniendo MQTT...");
         esp_mqtt_client_stop(client);
         mqtt_is_started = false;
       }

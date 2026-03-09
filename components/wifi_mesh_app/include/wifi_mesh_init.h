@@ -1,6 +1,18 @@
 #ifndef WIFI_MESH_INIT_H
 #define WIFI_MESH_INIT_H
 
+#define MESH_RX_QUEUE_LENGTH        10
+#define MESH_TX_QUEUE_LENGTH        10
+
+#define MESH_RECEIVER_TASK_PRIO     5
+#define MESH_RECEIVER_TASK_SIZE     3072
+
+#define MESH_TRANSMITTER_TASK_PRIO  5
+#define MESH_TRANSMITTER_TASK_SIZE  3072
+
+#define MESH_PROCESSOR_TASK_PRIO    5
+#define MESH_PROCESSOR_TASK_SIZE    3072
+
 void wifi_mesh_init(void);
 
 #endif

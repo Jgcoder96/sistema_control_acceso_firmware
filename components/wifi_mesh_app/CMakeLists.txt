@@ -8,7 +8,6 @@ idf_component_register(
          "wifi_mesh_tasks.c"
          "wifi_mesh_transmission.c"
     INCLUDE_DIRS "include"
-    PRIV_INCLUDE_DIRS "${PROJECT_DIR}/include" 
     REQUIRES esp_wifi esp_event nvs_flash freertos mqtt_app helpers
 
 )

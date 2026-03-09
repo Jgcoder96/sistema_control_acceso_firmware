@@ -8,7 +8,7 @@ static const char *TAG = "MQTT_PUBLISHER";
 
 esp_err_t send_data_by_mqtt(const char *topic, const char *payload) {
   if (client == NULL || !mqtt_is_started) {
-    ESP_LOGW(TAG, "No se puede enviar: MQTT no activo");
+    ESP_LOGW(TAG, "Error de envío: El servicio MQTT no está activo");
     return ESP_FAIL;
   }
 

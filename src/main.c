@@ -1,4 +1,5 @@
 #include "mqtt_init.h"
+#include "rtc_init.h"
 #include "wiegand_init.h"
 #include "wifi_mesh_init.h"
 #include "wifi_mesh_setup.h"
@@ -14,4 +15,7 @@ void app_main(void) {
   wifi_mesh_init();
 
   mqtt_init();
+
+  rtc_app_init();
+
 }

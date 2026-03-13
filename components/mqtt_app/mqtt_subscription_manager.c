@@ -27,7 +27,7 @@ void subscription_manager_configure_device(cJSON *root) {
         return;
     }
     app_packet_t app_packet;    
-    app_packet.layer = 1; 
+    app_packet.msg_type = MSG_TYPE_CONFIG_DEVICE; 
         
     memcpy(app_packet.source_mac, my_mac, 6);      
     memcpy(app_packet.destination_mac, temp_dest_mac, 6);
@@ -52,7 +52,7 @@ void subscription_manager_configure_all_devices(cJSON *root) {
 
   if (cJSON_IsString(accion)) {
     app_packet_t app_packet;
-    app_packet.layer = 1;
+    app_packet.msg_type = MSG_TYPE_CONFIG_ALL_DEVICES; 
     memcpy(app_packet.source_mac, my_mac, 6);   
         
     memset(app_packet.destination_mac, 0xFF, 6);

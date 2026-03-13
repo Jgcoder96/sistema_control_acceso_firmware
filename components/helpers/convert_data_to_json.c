@@ -1,12 +1,24 @@
 #include "cJSON.h"
+#include <time.h>
+
 #include "app_types.h"
 
 char* packet_to_json(app_packet_t packet) {
   cJSON *root = cJSON_CreateObject();
   if (root == NULL) return NULL;
 
-  cJSON_AddNumberToObject(root, "layer", packet.layer);
-  cJSON_AddNumberToObject(root, "card_id", packet.payload.card_id);
+  if (packet.msg_type == MSG_TYPE_CARD) {
+    cJSON_AddStringToObject(root, "card_id", packet.payload.access_event.card_id);
+
+    time_t t = (time_t)packet.payload.access_event.timestamp;
+    struct tm timeinfo;
+
+    localtime_r(&t, &timeinfo);
+      
+    char formatted_date[32];
+    strftime(formatted_date, sizeof(formatted_date), "%d/%m/%Y %H:%M:%S", &timeinfo);
+    cJSON_AddStringToObject(root, "date", formatted_date);
+  }
 
   char mac_src[18];
   snprintf(mac_src, sizeof(mac_src), "%02X:%02X:%02X:%02X:%02X:%02X", 

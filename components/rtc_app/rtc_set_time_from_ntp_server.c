@@ -34,8 +34,6 @@ bool set_time_from_npt_server() {
   }
 
   if (status == SNTP_SYNC_STATUS_COMPLETED) {
-    setenv("TZ", DEFAULT_TIMEZONE, 1);
-    tzset();
 
     time_t now;
     struct tm timeinfo;

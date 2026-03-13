@@ -10,5 +10,5 @@ idf_component_register(
          "rtc_utils.c"
          "rtc_write_time_in_module.c"
     INCLUDE_DIRS "include"
-    REQUIRES driver lwip esp_netif log freertos
+    REQUIRES driver lwip esp_netif log freertos helpers wifi_mesh_app
 )

@@ -1,12 +1,17 @@
-#include <stdbool.h>
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp_log.h"
+#include <stdbool.h>
+#include <time.h>
+#include <inttypes.h>
 
+#include "app_types.h"
 #include "rtc_get_time_from_module.h"
 #include "rtc_i2c_config.h"
 #include "rtc_set_time_from_ntp_server.h"
 #include "rtc_sync_device_internal_clock.h"
+#include "wifi_mesh_transmission.h"
+#include "rtc_config.h"
 
 static const char *TAG = "RTC_MANAGEMENT_TASK";
 
@@ -25,6 +30,9 @@ void rtc_management_task(void *pvParameters) {
   rtc_sync_device_internal_clock();
 
   while (1) {
+    setenv("TZ", DEFAULT_TIMEZONE, 1);
+    tzset();
+
     uint32_t current_tick = xTaskGetTickCount() * portTICK_PERIOD_MS;
   
     if (is_internet_available && is_node_root) {
@@ -34,6 +42,14 @@ void rtc_management_task(void *pvParameters) {
         if (set_time_from_npt_server()) {
           last_sync_tick = current_tick;
           set_time_at_system_startup = false;
+          app_packet_t app_packet;
+          memset(&app_packet, 0, sizeof(app_packet_t));
+          
+          app_packet.msg_type = MSG_TYPE_RTC_SYNC;
+          app_packet.payload.timestamp = (uint32_t)time(NULL);
+
+          ESP_LOGI(TAG, "Difundiendo hora a la red: %" PRIu32, app_packet.payload.timestamp);
+          broadcast_to_mesh(&app_packet);
           ESP_LOGI(TAG, "Sincronización del reloj exitosa. Próxima en 24 horas.");
         }
       }

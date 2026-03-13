@@ -17,18 +17,27 @@ typedef enum {
 
 typedef enum {
   MSG_TYPE_CARD,     
-  MSG_TYPE_CONFIG 
-} app_msg_type_t;
+  MSG_TYPE_CONFIG_DEVICE,
+  MSG_TYPE_CONFIG_ALL_DEVICES,
+  MSG_TYPE_RTC_SYNC
+} type_msg_t;
 
 typedef struct {
-  type_mesh_t type;        
+    char card_id[21];     
+    uint32_t timestamp;   
+} access_event_t;
+
+typedef struct {
+  type_mesh_t type;
+  type_msg_t msg_type;
+         
   uint8_t source_mac[6];      
-  uint8_t destination_mac[6];  
-  int layer;                   
+  uint8_t destination_mac[6];                   
     
   union {
-    uint64_t card_id;        
-    char accion[16];         
+    access_event_t access_event;        
+    char accion[16];   
+    uint32_t timestamp;      
   } payload;                   
 } app_packet_t;
 

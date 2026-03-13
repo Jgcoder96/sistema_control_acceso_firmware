@@ -1,6 +1,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "mqtt_client.h"
+#include <inttypes.h>    
+#include <string.h>     
+#include <time.h>        
 
 #include "app_types.h"
 #include "wiegand_types.h"
@@ -20,11 +23,15 @@ void wiegand_process_data_task(void *pvParameters) {
 
   while (1) {    
     if (xQueueReceive(wiegand_reader_queue, &card, portMAX_DELAY) == pdTRUE) {
-
       app_packet_t data = {0};
       memcpy(data.source_mac, my_mac, 6);
-      data.layer = my_mesh_layer;
-      data.payload.card_id = card.full_id;
+      data.msg_type = MSG_TYPE_CARD;
+      data.payload.access_event.timestamp = (uint32_t)time(NULL);
+      
+      snprintf(data.payload.access_event.card_id, 
+               sizeof(data.payload.access_event.card_id), 
+               "%" PRIu64, 
+               card.full_id);
 
       send_upstream(&data);
     }

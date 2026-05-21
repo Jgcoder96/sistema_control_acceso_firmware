@@ -3,8 +3,8 @@
 
 #include "wiegand_types.h"
 
-#define WIEGAND_GPIO_D0 GPIO_NUM_12
-#define WIEGAND_GPIO_D1 GPIO_NUM_11
+#define WIEGAND_GPIO_D0 GPIO_NUM_11
+#define WIEGAND_GPIO_D1 GPIO_NUM_12
 
 static const wiegand_config_t WIEGAND_CONFIG_DEFAULT = {
   .gpio_d0 = WIEGAND_GPIO_D0,

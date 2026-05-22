@@ -13,6 +13,9 @@
 #define MESH_PROCESSOR_TASK_PRIO    5
 #define MESH_PROCESSOR_TASK_SIZE    3072
 
+#define MESH_MONITOR_RSSI_TASK_PRIO 5
+#define MESH_MONITOR_RSSI_TASK_SIZE 3072
+
 void wifi_mesh_init(void);
 
 #endif

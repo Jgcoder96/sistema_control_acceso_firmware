@@ -8,12 +8,9 @@
 #include "wifi_mesh_node_logic.h"
 #include "app_types.h"
 #include "wifi_mesh_tasks.h"
+#include "wifi_mesh_info.h"
 
 static const char *TAG = "WIFI_MESH_TASKS";
-
-bool is_mesh_connected = false;
-int my_mesh_layer = -1;
-uint8_t my_mac[6];
 
 void mesh_transmitter_task(void *arg) {
   app_packet_t app_packet;
@@ -79,7 +76,7 @@ void mesh_processor_task(void *arg) {
           break;
 
         case ROOT_TO_CHILD:
-          handle_root_to_child(msg, my_mac);
+          handle_root_to_child(msg, node_mesh_info.mac);
           break;
 
         default:

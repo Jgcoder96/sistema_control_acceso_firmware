@@ -17,4 +17,5 @@ void log_configuration() {
   esp_log_level_set("RTC_GET_TIME_FROM_MODULE", ESP_LOG_INFO);
   esp_log_level_set("RTC_MANAGEMENT_TASK", ESP_LOG_INFO);
   esp_log_level_set("RTC_SET_TIME_FROM_NTP_SERVER", ESP_LOG_INFO);
+  esp_log_level_set("RSSI_MONITOR", ESP_LOG_INFO);
 }

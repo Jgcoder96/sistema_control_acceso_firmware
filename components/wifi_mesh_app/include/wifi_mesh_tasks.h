@@ -5,11 +5,7 @@
 #include "esp_mesh.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
-#include "wifi_mesh_config.h"
-
-extern bool is_mesh_connected;      
-extern int my_mesh_layer;          
-extern uint8_t my_mac[6]; 
+#include "wifi_mesh_config.h"         
 
 extern QueueHandle_t mesh_rx_queue; 
 extern QueueHandle_t mesh_tx_queue; 

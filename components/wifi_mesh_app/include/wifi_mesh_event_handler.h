@@ -5,9 +5,6 @@
 #include "esp_netif.h"
 
 extern esp_netif_t *netif_sta;
-extern bool is_internet_available;
-extern bool is_node_root;
-
 
 void wifi_mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 

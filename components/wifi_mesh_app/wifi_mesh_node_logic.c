@@ -5,6 +5,7 @@
 #include "app_types.h"
 #include "mqtt_publisher.h"
 #include "rtc_write_time_in_module.h"
+#include "wifi_mesh_info.h"
 
 static const char *TAG = "WIFI_MESH_NODE_LOGIC";
 
@@ -38,7 +39,7 @@ void handle_root_to_all_children(const app_packet_t *msg) {
 }
 
 void handle_root_to_child(const app_packet_t *msg, const uint8_t *my_mac) {
-  if (memcmp(msg->destination_mac, my_mac, 6) == 0) {
+  if (memcmp(msg->destination_mac, node_mesh_info.mac, 6) == 0) {
     if (msg->msg_type == MSG_TYPE_CONFIG_DEVICE) {
       ESP_LOGW(TAG, "CONFIG LOCAL | ACCION: %s", msg->payload.accion);
     }

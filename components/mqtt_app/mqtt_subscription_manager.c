@@ -6,6 +6,7 @@
 #include "wifi_mesh_transmission.h"
 #include "wifi_mesh_node_logic.h"
 #include "app_types.h"
+#include "wifi_mesh_info.h"
 
 static const char *TAG = "MQTT_SUBSCRIPTION_MANAGER";
 
@@ -29,14 +30,14 @@ void subscription_manager_configure_device(cJSON *root) {
     app_packet_t app_packet;    
     app_packet.msg_type = MSG_TYPE_CONFIG_DEVICE; 
         
-    memcpy(app_packet.source_mac, my_mac, 6);      
+    memcpy(app_packet.source_mac, node_mesh_info.mac, 6);      
     memcpy(app_packet.destination_mac, temp_dest_mac, 6);
 
     memset(app_packet.payload.accion, 0, sizeof(app_packet.payload.accion));
     strncpy(app_packet.payload.accion, accion->valuestring, sizeof(app_packet.payload.accion) - 1);
 
-    if (memcmp(temp_dest_mac, my_mac, 6) == 0) {
-      handle_root_to_child(&app_packet, my_mac);
+    if (memcmp(temp_dest_mac, node_mesh_info.mac, 6) == 0) {
+      handle_root_to_child(&app_packet, node_mesh_info.mac);
     } else {
       send_downstream(&app_packet);
     }
@@ -53,7 +54,7 @@ void subscription_manager_configure_all_devices(cJSON *root) {
   if (cJSON_IsString(accion)) {
     app_packet_t app_packet;
     app_packet.msg_type = MSG_TYPE_CONFIG_ALL_DEVICES; 
-    memcpy(app_packet.source_mac, my_mac, 6);   
+    memcpy(app_packet.source_mac, node_mesh_info.mac, 6);   
         
     memset(app_packet.destination_mac, 0xFF, 6);
         

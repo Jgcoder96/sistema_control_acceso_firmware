@@ -7,11 +7,9 @@
 #include "mqtt_config.h"
 #include "mqtt_manager.h"
 #include "mqtt_subscriber.h"
+#include "wifi_mesh_info.h"
 
 static const char *TAG = "MQTT_MANAGER";
-
-extern bool is_internet_available;
-extern bool is_node_root;
 
 extern QueueHandle_t mqtt_subscription_queue;
 
@@ -56,7 +54,7 @@ void mqtt_management_task(void *pvParameters) {
   esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
 
   while (1) {
-    bool condition_met = (is_internet_available && is_node_root);
+    bool condition_met = (node_mesh_info.is_internet_available && node_mesh_info.is_root);
       if (condition_met && !mqtt_is_started) {
         ESP_LOGI(TAG, "[MQTT] Dispositivo elegido como root y cuenta con conexión a Internet. Iniciando MQTT...");
         esp_mqtt_client_start(client);

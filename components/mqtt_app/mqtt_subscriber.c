@@ -10,7 +10,6 @@
 
 static const char *TAG = "MQTT_SUBSCRIBER";
 
-extern uint8_t my_mac[6];
 extern QueueHandle_t mqtt_subscription_queue;
 
 void mqtt_subscription_handler_task(void *pvParameters) {

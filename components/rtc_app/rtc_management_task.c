@@ -12,13 +12,11 @@
 #include "rtc_sync_device_internal_clock.h"
 #include "wifi_mesh_transmission.h"
 #include "rtc_config.h"
+#include "wifi_mesh_info.h"
 
 static const char *TAG = "RTC_MANAGEMENT_TASK";
 
 #define SYNC_INTERVAL_MS (24 * 60 * 60 * 1000) 
-
-extern bool is_internet_available;
-extern bool is_node_root;
 
 void rtc_management_task(void *pvParameters) {
   uint32_t last_sync_tick = 0; 
@@ -35,7 +33,7 @@ void rtc_management_task(void *pvParameters) {
 
     uint32_t current_tick = xTaskGetTickCount() * portTICK_PERIOD_MS;
   
-    if (is_internet_available && is_node_root) {
+    if (node_mesh_info.is_internet_available && node_mesh_info.is_root) {
 
       if (set_time_at_system_startup || (current_tick - last_sync_tick >= SYNC_INTERVAL_MS)) {  
         ESP_LOGI(TAG, "[RTC] Iniciando resincronización periódica del reloj con el servidor NTP...");

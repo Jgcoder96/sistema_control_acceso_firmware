@@ -63,7 +63,7 @@ void mesh_processor_task(void *arg) {
     if (xQueueReceive(mesh_rx_queue, &mesh_packet, portMAX_DELAY) == pdTRUE) {
             
       if (mesh_packet.len != sizeof(app_packet_t)) {
-        ESP_LOGE(TAG, "Tamaño de paquete inválido: %d", mesh_packet.len);
+        ESP_LOGE(TAG, "[WIFI_MESH] Tamaño de paquete inválido: %d", mesh_packet.len);
         continue;
       }
 
@@ -83,7 +83,7 @@ void mesh_processor_task(void *arg) {
           break;
 
         default:
-          ESP_LOGD(TAG, "Tipo de mensaje no manejado: %d", msg->type);
+          ESP_LOGD(TAG, "[WIFI_MESH] Tipo de mensaje no manejado: %d", msg->type);
           break;
       }
     }

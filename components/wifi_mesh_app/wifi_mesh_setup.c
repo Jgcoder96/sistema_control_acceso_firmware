@@ -13,17 +13,8 @@
 
 static const char *TAG = "WIFI_MESH_SETUP";
 
-static void initialize_nvs_storage(void) {
-  esp_err_t err = nvs_flash_init();
-  if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-    ESP_ERROR_CHECK(nvs_flash_erase());
-    err = nvs_flash_init();
-  }
-  ESP_ERROR_CHECK(err);
-}
-
 static uint8_t discover_router_primary_channel(void) {
-  ESP_LOGI(TAG, "Iniciando escaneo de canal para SSID: %s...", WIFI_SSID);
+  ESP_LOGI(TAG, "[WIFI_MESH] Iniciando escaneo de canal para SSID: %s...", WIFI_SSID);
     
   wifi_scan_config_t scan_config = {
     .ssid = (uint8_t *)WIFI_SSID,
@@ -38,16 +29,14 @@ static uint8_t discover_router_primary_channel(void) {
 
   if (esp_wifi_scan_get_ap_records(&ap_count, &ap_record) == ESP_OK && ap_count > 0) {
     detected_channel = ap_record.primary;
-    ESP_LOGI(TAG, "Router localizado con éxito. Operando en Canal: %d", detected_channel);
+    ESP_LOGI(TAG, "[WIFI_MESH] Router localizado con éxito. Operando en Canal: %d", detected_channel);
   } else {
-    ESP_LOGW(TAG, "No se encontró el Router. Usando canal predeterminado: %d", detected_channel);
+    ESP_LOGW(TAG, "[WIFI_MESH] No se encontró el Router. Usando canal predeterminado: %d", detected_channel);
   }
   return detected_channel;
 }
 
 void wifi_mesh_setup(void) {
-  // 1. Inicialización de persistencia
-  initialize_nvs_storage();
 
   // 2. Inicialización de la pila TCP/IP y Lazo de Eventos
   ESP_ERROR_CHECK(esp_netif_init());

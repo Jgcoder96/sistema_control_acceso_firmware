@@ -23,8 +23,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
   esp_mqtt_event_handle_t event = event_data;
   switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
-        esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_CONFIG_DEVICE, 0);
-        esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_CONFIG_ALL_DEVICE, 0);
+        esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_CONFIG_DEVICE, 1);
+        esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_CONFIG_ALL_DEVICE, 1);
         break;
 
     case MQTT_EVENT_DATA: {
@@ -58,11 +58,12 @@ void mqtt_management_task(void *pvParameters) {
   while (1) {
     bool condition_met = (is_internet_available && is_node_root);
       if (condition_met && !mqtt_is_started) {
-        ESP_LOGI(TAG, "Dispositivo elegido como root y cuenta con conexión a Internet. Iniciando MQTT...");
+        ESP_LOGI(TAG, "[MQTT] Dispositivo elegido como root y cuenta con conexión a Internet. Iniciando MQTT...");
         esp_mqtt_client_start(client);
         mqtt_is_started = true;
+        ESP_LOGI(TAG, "[MQTT] Conectado a MQTT.");
       } else if (!condition_met && mqtt_is_started) {
-        ESP_LOGW(TAG, "El dispositivo ha perdido el root o la conexión a Internet. Deteniendo MQTT...");
+        ESP_LOGW(TAG, "[MQTT] El dispositivo ha perdido el root o la conexión a Internet. Deteniendo MQTT...");
         esp_mqtt_client_stop(client);
         mqtt_is_started = false;
       }

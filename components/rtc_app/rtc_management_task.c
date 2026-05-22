@@ -38,7 +38,7 @@ void rtc_management_task(void *pvParameters) {
     if (is_internet_available && is_node_root) {
 
       if (set_time_at_system_startup || (current_tick - last_sync_tick >= SYNC_INTERVAL_MS)) {  
-        ESP_LOGI(TAG, "Iniciando resincronización periódica del reloj con el servidor NTP...");
+        ESP_LOGI(TAG, "[RTC] Iniciando resincronización periódica del reloj con el servidor NTP...");
         if (set_time_from_npt_server()) {
           last_sync_tick = current_tick;
           set_time_at_system_startup = false;
@@ -48,13 +48,13 @@ void rtc_management_task(void *pvParameters) {
           app_packet.msg_type = MSG_TYPE_RTC_SYNC;
           app_packet.payload.timestamp = (uint32_t)time(NULL);
 
-          ESP_LOGI(TAG, "Difundiendo hora a la red: %" PRIu32, app_packet.payload.timestamp);
+          ESP_LOGI(TAG, "[RTC] Difundiendo hora a la red: %" PRIu32, app_packet.payload.timestamp);
           broadcast_to_mesh(&app_packet);
-          ESP_LOGI(TAG, "Sincronización del reloj exitosa. Próxima en 24 horas.");
+          ESP_LOGI(TAG, "[RTC] Sincronización del reloj exitosa. Próxima en 24 horas.");
         }
       }
     }
-    rtc_get_time_from_module();
+    //rtc_get_time_from_module();
     vTaskDelay(pdMS_TO_TICKS(10000));
   }
 }

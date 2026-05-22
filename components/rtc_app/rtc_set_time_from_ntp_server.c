@@ -12,7 +12,7 @@
 static const char *TAG = "RTC_SET_TIME_FROM_NTP_SERVER";
 
 bool set_time_from_npt_server() {
-  ESP_LOGI(TAG, "Iniciando sincronización con servidores NTP...");
+  ESP_LOGI(TAG, "[RTC] Iniciando sincronización con servidores NTP...");
      
   if (esp_sntp_enabled()) {
     esp_sntp_stop();
@@ -28,7 +28,7 @@ bool set_time_from_npt_server() {
   sntp_sync_status_t status = SNTP_SYNC_STATUS_RESET;
 
   while (status == SNTP_SYNC_STATUS_RESET && ++retry <= NTP_MAX_RETRY) {
-    ESP_LOGI(TAG, "Conectando a NTP... Intento (%d/%d)", retry, NTP_MAX_RETRY);
+    ESP_LOGI(TAG, "[RTC] Conectando a NTP... Intento (%d/%d)", retry, NTP_MAX_RETRY);
     vTaskDelay(pdMS_TO_TICKS(NTP_RETRY_DELAY_MS));
     status = sntp_get_sync_status();
   }
@@ -41,22 +41,22 @@ bool set_time_from_npt_server() {
     localtime_r(&now, &timeinfo);
 
     if (timeinfo.tm_year < (2024 - 1900)) {
-      ESP_LOGE(TAG, "Error: Hora inválida.");
+      ESP_LOGE(TAG, "[RTC] Error: Hora inválida.");
       esp_sntp_stop();
       return false;
     }
 
         
     if (rtc_write_time_in_module(&timeinfo) == ESP_OK) {
-      ESP_LOGI(TAG, "Sincronización total exitosa.");
-      ESP_LOGI(TAG, "Hora aplicada: %02d:%02d:%02d",timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+      ESP_LOGI(TAG, "[RTC] Sincronización total exitosa.");
+      ESP_LOGI(TAG, "[RTC] Hora aplicada: %02d:%02d:%02d",timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
       esp_sntp_stop();
       return true;
     } else {
-      ESP_LOGE(TAG, "NTP OK, pero fallo al escribir en el chip físico por I2C.");
+      ESP_LOGE(TAG, "[RTC] NTP OK, pero fallo al escribir en el chip físico por I2C.");
     }
   } else {
-    ESP_LOGE(TAG, "Fallo: No se pudo contactar con ningún servidor NTP.");
+    ESP_LOGE(TAG, "[RTC] Fallo: No se pudo contactar con ningún servidor NTP.");
   }
   
     esp_sntp_stop();

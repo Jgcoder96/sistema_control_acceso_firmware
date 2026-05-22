@@ -38,7 +38,7 @@ void wiegand_monitor_task(void *pvParameters) {
       }
 
       if (xQueueSend(wiegand_reader_queue, &cardData, 0) != pdPASS) {
-        ESP_LOGW(TAG, "Cola llena, tarjeta descartada");
+        ESP_LOGW(TAG, "[WIEGAND]Cola llena, tarjeta descartada.");
       }
     }
     vTaskDelay(pdMS_TO_TICKS(20));

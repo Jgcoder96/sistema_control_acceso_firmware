@@ -23,11 +23,11 @@ void wifi_mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t eve
         is_node_root = esp_mesh_is_root();
 
         if (is_node_root) {
-          ESP_LOGI(TAG, "Dispositivo conectado como nodo raíz");
+          ESP_LOGI(TAG, "[WIFI_MESH] Dispositivo conectado como nodo raíz.");
           if (netif_sta) esp_netif_dhcpc_start(netif_sta);
         } else {
-          ESP_LOGI(TAG, "Dispositivo conectado como nodo intermedio");
-          is_internet_available = false; 
+          ESP_LOGI(TAG, "[WIFI_MESH] Dispositivo conectado como nodo intermedio.");
+          is_internet_available = false;
         }
         break;
 
@@ -35,7 +35,7 @@ void wifi_mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t eve
         is_mesh_connected = false;
         my_mesh_layer = -1;
         is_internet_available = false;
-        ESP_LOGW(TAG, "Se perdió la conexión. Iniciando proceso de re-escaneo...");
+        ESP_LOGW(TAG, "[WIFI_MESH] Se perdió la conexión. Iniciando proceso de re-escaneo...");
         break;
 
       default:
@@ -47,7 +47,7 @@ void wifi_mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t eve
           ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
 
           is_internet_available = true;
-          ESP_LOGI(TAG, "Conectividad IP establecida. IP asignada por Router: " IPSTR, IP2STR(&event->ip_info.ip));
+          ESP_LOGI(TAG, "[WIFI_MESH] Conectividad IP establecida. IP asignada por Router: " IPSTR, IP2STR(&event->ip_info.ip));
           break;
           
         default:

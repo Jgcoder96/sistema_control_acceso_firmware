@@ -8,7 +8,7 @@ static const char *TAG = "MQTT_PUBLISHER";
 
 esp_err_t send_data_by_mqtt(const char *topic, const char *payload) {
   if (client == NULL || !mqtt_is_started) {
-    ESP_LOGW(TAG, "Error de envío: El servicio MQTT no está activo");
+    ESP_LOGW(TAG, "[MQTT] Error de envío: El servicio MQTT no está activo");
     return ESP_FAIL;
   }
 
@@ -17,7 +17,7 @@ esp_err_t send_data_by_mqtt(const char *topic, const char *payload) {
   int msg_id = esp_mqtt_client_publish(client, topic, payload, 0, 1, 0);
     
   if (msg_id < 0) {
-    ESP_LOGE(TAG, "Error al publicar en MQTT");
+    ESP_LOGE(TAG, "[MQTT] Error al publicar en MQTT");
     return ESP_FAIL;
   }
 
@@ -32,6 +32,6 @@ void mqtt_publisher(const char *topic, app_packet_t packet) {
         
     free(json_payload);
   } else {
-      ESP_LOGE(TAG, "Error al crear el JSON");
+      ESP_LOGE(TAG, "[MQTT] Error al crear el JSON");
   }
 } 

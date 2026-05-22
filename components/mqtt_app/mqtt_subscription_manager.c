@@ -7,7 +7,7 @@
 #include "wifi_mesh_node_logic.h"
 #include "app_types.h"
 
-static const char *TAG = "DEVICE_CONFIG";
+static const char *TAG = "MQTT_SUBSCRIPTION_MANAGER";
 
 void subscription_manager_configure_device(cJSON *root) {
   cJSON *mac = cJSON_GetObjectItemCaseSensitive(root, "mac");
@@ -23,7 +23,7 @@ void subscription_manager_configure_device(cJSON *root) {
                         &temp_dest_mac[4], &temp_dest_mac[5]);
 
     if (mac_bytes != 6) {
-        ESP_LOGE(TAG, "Formato de MAC inválido");
+        ESP_LOGE(TAG, "[MQTT] Formato de MAC inválido");
         return;
     }
     app_packet_t app_packet;    
@@ -42,7 +42,7 @@ void subscription_manager_configure_device(cJSON *root) {
     }
     
   } else {
-    ESP_LOGW(TAG, "Error al configurar el dispositivo: datos incompletos");
+    ESP_LOGW(TAG, "[MQTT] Error al configurar el dispositivo: datos incompletos");
   }
 }
 
@@ -62,6 +62,6 @@ void subscription_manager_configure_all_devices(cJSON *root) {
         
     broadcast_to_mesh(&app_packet);
     } else {
-      ESP_LOGW(TAG, "Error al configurar el dispositivo");
+      ESP_LOGW(TAG, "[MQTT] Error al configurar el dispositivo");
     }
 }

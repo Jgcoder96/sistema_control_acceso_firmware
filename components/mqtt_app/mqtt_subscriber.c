@@ -21,7 +21,7 @@ void mqtt_subscription_handler_task(void *pvParameters) {
       cJSON *root = cJSON_Parse(mqtt_received_data.data);
             
       if (root == NULL) {
-        ESP_LOGE(TAG, "Error: JSON mal formado");
+        ESP_LOGE(TAG, "[MQTT] Error: JSON Inválido");
         continue;
       }  
     

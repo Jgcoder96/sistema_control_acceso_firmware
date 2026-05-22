@@ -20,5 +20,5 @@ void wifi_mesh_init(void) {
   xTaskCreate(mesh_transmitter_task, "mesh_tx_task", MESH_TRANSMITTER_TASK_SIZE, NULL, MESH_TRANSMITTER_TASK_PRIO, NULL);
   xTaskCreate(mesh_processor_task, "mesh_pd_task", MESH_PROCESSOR_TASK_SIZE, NULL, MESH_PROCESSOR_TASK_PRIO, NULL);
 
-  ESP_LOGI(TAG, "Sistema Mesh Inicializado. MAC: " MACSTR, MAC2STR(my_mac));
+  ESP_LOGI(TAG, "[WIFI_MESH] Sistema Mesh Inicializado. MAC: " MACSTR, MAC2STR(my_mac));
 }

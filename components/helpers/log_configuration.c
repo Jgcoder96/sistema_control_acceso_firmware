@@ -1,0 +1,20 @@
+#include "esp_log.h"
+
+void log_configuration() {
+    esp_log_level_set("*", ESP_LOG_WARN); 
+
+  esp_log_level_set("wifi", ESP_LOG_NONE);
+  esp_log_level_set("mesh", ESP_LOG_NONE);
+
+  esp_log_level_set("NVS_INIT", ESP_LOG_INFO);
+  esp_log_level_set("WIEGAND_INIT", ESP_LOG_INFO);
+  esp_log_level_set("WIFI_MESH_EVENT_HANDLER", ESP_LOG_INFO);
+  esp_log_level_set("WIFI_MESH_INIT", ESP_LOG_INFO);
+  esp_log_level_set("WIFI_MESH_SETUP", ESP_LOG_INFO);
+  esp_log_level_set("MQTT_MANAGER", ESP_LOG_INFO);
+  esp_log_level_set("MQTT_PUBLISHER", ESP_LOG_INFO);
+  esp_log_level_set("MQTT_SUBSCRIBER", ESP_LOG_INFO);
+  esp_log_level_set("RTC_GET_TIME_FROM_MODULE", ESP_LOG_INFO);
+  esp_log_level_set("RTC_MANAGEMENT_TASK", ESP_LOG_INFO);
+  esp_log_level_set("RTC_SET_TIME_FROM_NTP_SERVER", ESP_LOG_INFO);
+}

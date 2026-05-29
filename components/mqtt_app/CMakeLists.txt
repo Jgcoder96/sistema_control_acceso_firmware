@@ -10,6 +10,7 @@ idf_component_register(
          "mqtt_subscriber.c"
          "mqtt_manager.c"
          "mqtt_subscription_manager.c"
+         "mqtt_status_broadcast_task.c"
     INCLUDE_DIRS "include"
     REQUIRES mqtt freertos esp_wifi esp_event nvs_flash json helpers
 )

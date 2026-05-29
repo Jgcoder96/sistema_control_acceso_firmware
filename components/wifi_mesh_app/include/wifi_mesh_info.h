@@ -11,6 +11,8 @@ typedef struct {
   bool is_root; 
   bool is_internet_available;
   bool is_mesh_connected;
+  bool is_mqtt_connected;
+  bool is_synchronized;
 
 } node_mesh_info_t;
 

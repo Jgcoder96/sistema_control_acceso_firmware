@@ -1,6 +1,7 @@
 #include "mqtt_init.h"
 #include "mqtt_manager.h"
 #include "mqtt_subscriber.h"
+#include "mqtt_status_broadcast_task.h"
 
 // static const char *TAG = "MQTT_INIT";
 
@@ -11,5 +12,6 @@ void mqtt_init(void) {
 
   xTaskCreate(mqtt_management_task, "mqtt_management_task", MQTT_MANAGEMENT_TASK_SIZE, NULL, MQTT_MANAGEMENT_TASK_PRIO, NULL);
   xTaskCreate(mqtt_subscription_handler_task, "mqtt_subscription_handler_task", MQTT_SUBSCRIPTION_HANDLER_TASK_SIZE, NULL, MQTT_SUBSCRIPTION_HANDLER_TASK_PRIO, NULL);
+  xTaskCreate(mqtt_status_broadcast_task, "mqtt_status_broadcast_task", MQTT_STATUS_BROADCAST_TASK_SIZE, NULL, MQTT_STATUS_BROADCAST_TASK_PRIO, NULL);
   
 }

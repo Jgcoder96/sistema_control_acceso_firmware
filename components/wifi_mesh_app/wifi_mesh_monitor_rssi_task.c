@@ -5,7 +5,7 @@
 #include "esp_wifi.h"
 #include "wifi_mesh_info.h"
 
-static const char *TAG = "RSSI_MONITOR";
+//static const char *TAG = "RSSI_MONITOR";
 
 void monitor_rssi_task(void *arg) {
   int rssi = 0;

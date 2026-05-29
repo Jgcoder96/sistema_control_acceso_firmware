@@ -13,7 +13,7 @@
 void app_main(void) {
   log_configuration();
   
-  nvs_storage_init();
+  nvs_init();
   wiegand_init();
 
   wifi_mesh_setup();

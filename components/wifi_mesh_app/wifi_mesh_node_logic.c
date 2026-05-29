@@ -6,33 +6,27 @@
 #include "mqtt_publisher.h"
 #include "rtc_write_time_in_module.h"
 #include "wifi_mesh_info.h"
+#include "sync_rtc.h"
+#include "sync_mqtt_status.h"
+#include "mqtt_manager.h"
+
 
 static const char *TAG = "WIFI_MESH_NODE_LOGIC";
 
 void handle_child_to_root(const app_packet_t *msg) {
-  mqtt_publisher("mesh/config", *msg);
+  if (msg->msg_type == MSG_TYPE_CARD) {
+    mqtt_publisher("mesh/config", *msg);
+  } else if (msg->msg_type == MSG_TYPE_INITIAL_SYNC) {
+    mqtt_publisher("device/sync", *msg);
+  }
+  
 }
 
 void handle_root_to_all_children(const app_packet_t *msg) {
   if (msg->msg_type == MSG_TYPE_RTC_SYNC) {
-    uint32_t ts_utc = msg->payload.timestamp;
-    time_t t_utc = (time_t)ts_utc;
-    struct tm timeinfo;
-
-    struct timeval tv = { .tv_sec = t_utc, .tv_usec = 0 };
-    settimeofday(&tv, NULL); 
-
-    localtime_r(&t_utc, &timeinfo);
-
-    esp_err_t err = rtc_write_time_in_module(&timeinfo);
-        
-    if (err == ESP_OK) {
-      char buf[32];
-      strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &timeinfo);
-      ESP_LOGI(TAG, "Sincronización Exitosa (Hora Venezuela): %s", buf);
-    } else {
-      ESP_LOGE(TAG, "Error al escribir en DS1307");
-    }
+    if (!node_mesh_info.is_root) sync_rtc(msg->payload.timestamp);
+  } else if (msg->msg_type == MSG_TYPE_MQTT_STATUS) {
+    if (!node_mesh_info.is_root) sync_mqtt_status(msg->payload.mqtt_status_event.mqtt_status);
   } else if (msg->msg_type == MSG_TYPE_CONFIG_ALL_DEVICES) {
     ESP_LOGW(TAG, "CONFIG GLOBAL | ACCION: %s", msg->payload.accion);
   }

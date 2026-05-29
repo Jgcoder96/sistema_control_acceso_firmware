@@ -9,6 +9,6 @@ idf_component_register(
          "wifi_mesh_transmission.c"
          "wifi_mesh_monitor_rssi_task.c"
     INCLUDE_DIRS "include"
-    REQUIRES esp_wifi esp_event nvs_flash freertos mqtt_app helpers rtc_app 
+    REQUIRES esp_wifi esp_event nvs_flash freertos mqtt_app helpers rtc_app node_logic_app
 
 )

@@ -8,6 +8,7 @@
 #include "mqtt_manager.h"
 #include "mqtt_subscriber.h"
 #include "wifi_mesh_info.h"
+#include "mqtt_status_broadcast_task.h"
 
 static const char *TAG = "MQTT_MANAGER";
 
@@ -59,11 +60,16 @@ void mqtt_management_task(void *pvParameters) {
         ESP_LOGI(TAG, "[MQTT] Dispositivo elegido como root y cuenta con conexión a Internet. Iniciando MQTT...");
         esp_mqtt_client_start(client);
         mqtt_is_started = true;
+        node_mesh_info.is_mqtt_connected = true;
+        if (node_mesh_info.is_root == true) send_mqtt_status_update();
         ESP_LOGI(TAG, "[MQTT] Conectado a MQTT.");
       } else if (!condition_met && mqtt_is_started) {
         ESP_LOGW(TAG, "[MQTT] El dispositivo ha perdido el root o la conexión a Internet. Deteniendo MQTT...");
         esp_mqtt_client_stop(client);
         mqtt_is_started = false;
+        node_mesh_info.is_mqtt_connected = false;
+        if (node_mesh_info.is_root == true) send_mqtt_status_update();
+        
       }
       vTaskDelay(pdMS_TO_TICKS(2000));
     }

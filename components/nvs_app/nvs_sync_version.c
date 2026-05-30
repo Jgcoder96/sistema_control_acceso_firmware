@@ -11,12 +11,16 @@
 
 static const char *TAG = "NVS_SYNC_VERSION";
 
-#define MAX_RANDOM_DELAY_MS 5000
+#define MIN_DELAY_MS 10000
+#define MAX_DELAY_MS 20000
 
 void nvs_sync_version(void *pvParameters) {
   char saved_version_str[32];
     
   while (1) {
+    uint32_t random_ms = MIN_DELAY_MS + (esp_random() % (MAX_DELAY_MS - MIN_DELAY_MS + 1));
+    vTaskDelay(pdMS_TO_TICKS(random_ms));
+
     if (node_mesh_info.is_synchronized) {
       ESP_LOGI(TAG, "[NVS] Nodo ya sincronizado. Finalizando tarea.");
       vTaskDelete(NULL);
@@ -54,14 +58,12 @@ void nvs_sync_version(void *pvParameters) {
       }
     } else {
       if (node_mesh_info.is_mesh_connected && node_mesh_info.is_mqtt_connected) {
-        uint32_t random_ms = esp_random() % MAX_RANDOM_DELAY_MS;
-        vTaskDelay(pdMS_TO_TICKS(random_ms));
         
         send_upstream(&packet);
 
         ESP_LOGI(TAG, "[NVS] Petición de sincronización enviada (Ver: %d)", (int)current_version);
       }
     }
-    vTaskDelay(pdMS_TO_TICKS(10000));
+    
   }
 }

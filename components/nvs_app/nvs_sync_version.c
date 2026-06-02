@@ -11,8 +11,8 @@
 
 static const char *TAG = "NVS_SYNC_VERSION";
 
-#define MIN_DELAY_MS 10000
-#define MAX_DELAY_MS 20000
+#define MIN_DELAY_MS 20000
+#define MAX_DELAY_MS 40000
 
 void nvs_sync_version(void *pvParameters) {
   char saved_version_str[32];

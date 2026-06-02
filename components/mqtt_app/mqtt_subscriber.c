@@ -13,24 +13,26 @@ static const char *TAG = "MQTT_SUBSCRIBER";
 extern QueueHandle_t mqtt_subscription_queue;
 
 void mqtt_subscription_handler_task(void *pvParameters) {
-  mqtt_received_data_t mqtt_received_data;
+   mqtt_received_data_t *received_ptr;
 
   while (1) {
-    if (xQueueReceive(mqtt_subscription_queue, &mqtt_received_data, portMAX_DELAY)) {  
-      cJSON *root = cJSON_Parse(mqtt_received_data.data);
-            
-      if (root == NULL) {
-        ESP_LOGE(TAG, "[MQTT] Error: JSON Inválido");
-        continue;
-      }  
-    
-      if (strcmp(mqtt_received_data.topic, SUBSCRIBE_IN_TOPIC_CONFIG_DEVICE) == 0) {
-        subscription_manager_configure_device(root);
-      } else if (strcmp(mqtt_received_data.topic, SUBSCRIBE_IN_TOPIC_CONFIG_ALL_DEVICE) == 0) {
-        subscription_manager_configure_all_devices(root);
-      }
+    if (xQueueReceive(mqtt_subscription_queue, &received_ptr, portMAX_DELAY)) {  
 
-      cJSON_Delete(root);
+      printf("\n📥 JSON RECIBIDO (%d bytes):\n%s\n", received_ptr->data_len, received_ptr->data);
+      cJSON *root = cJSON_Parse(received_ptr->data);
+
+      if (root != NULL) {
+        cJSON *actual_root = cJSON_IsArray(root) ? cJSON_GetArrayItem(root, 0) : root;
+
+        if (strcmp(received_ptr->topic, SUBSCRIBE_IN_TOPIC_SYNC_RESPONSE) == 0) {
+          procesar_mensaje_sincronizacion(actual_root);
+        }
+          cJSON_Delete(root);
+        } else {
+          ESP_LOGE("SUB", "Error JSON: %s", cJSON_GetErrorPtr());
+        }
+        free(received_ptr->data);
+        free(received_ptr);
     }
   }
 }

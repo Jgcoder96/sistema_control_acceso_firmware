@@ -5,5 +5,6 @@
 
 void subscription_manager_configure_device(cJSON *root);
 void subscription_manager_configure_all_devices(cJSON *root);
+void procesar_mensaje_sincronizacion(cJSON *root);
 
 #endif

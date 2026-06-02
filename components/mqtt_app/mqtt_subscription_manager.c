@@ -1,6 +1,7 @@
 #include "cJSON.h"
 #include "esp_log.h"
 #include <string.h> 
+#include "mbedtls/base64.h"
 
 #include "wifi_mesh_tasks.h"
 #include "wifi_mesh_transmission.h"
@@ -64,5 +65,57 @@ void subscription_manager_configure_all_devices(cJSON *root) {
     broadcast_to_mesh(&app_packet);
     } else {
       ESP_LOGW(TAG, "[MQTT] Error al configurar el dispositivo");
+    }
+}
+
+
+void procesar_mensaje_sincronizacion(cJSON *root) {
+    cJSON *version = cJSON_GetObjectItemCaseSensitive(root, "version");
+    cJSON *mac_b64 = cJSON_GetObjectItemCaseSensitive(root, "mac");
+
+    if (!cJSON_IsNumber(version) || !cJSON_IsString(mac_b64)) {
+      ESP_LOGE(TAG, "JSON mal formado: faltan campos 'version' o 'mac'");
+      return;
+    }
+
+    uint8_t mac_recibida_bin[6];
+    size_t out_len;
+    
+    int ret = mbedtls_base64_decode(mac_recibida_bin, sizeof(mac_recibida_bin), &out_len, 
+                                   (const unsigned char *)mac_b64->valuestring, 
+                                   strlen(mac_b64->valuestring));
+
+    if (ret != 0 || out_len != 6) {
+      ESP_LOGE(TAG, "Error al decodificar la MAC binaria del JSON");
+      return;
+    }
+
+    if (memcmp(mac_recibida_bin, node_mesh_info.mac, 6) == 0) {
+        
+        
+      ESP_LOGI(TAG, "--------------------------------------------------");
+      ESP_LOGI(TAG, "🏠 ¡COINCIDENCIA! El mensaje es para el NODO ROOT");
+      ESP_LOGI(TAG, "Versión recibida: %d", version->valueint);
+        
+        
+      char *json_render = cJSON_Print(root);
+      printf("%s\n", json_render);
+      free(json_render);
+        
+      ESP_LOGI(TAG, "--------------------------------------------------");
+
+    } else {
+      ESP_LOGW(TAG, "--------------------------------------------------");
+      ESP_LOGW(TAG, "📡 AVISO: El mensaje NO es para mí (ROOT)");
+      ESP_LOGW(TAG, "Destinado al Nodo MAC: %02X:%02X:%02X:%02X:%02X:%02X",
+                mac_recibida_bin[0], mac_recibida_bin[1], mac_recibida_bin[2],
+                mac_recibida_bin[3], mac_recibida_bin[4], mac_recibida_bin[5]);
+        
+        
+      char *json_render = cJSON_Print(root);
+      printf("Contenido a rutear:\n%s\n", json_render);
+      free(json_render);
+        
+      ESP_LOGW(TAG, "--------------------------------------------------");
     }
 }

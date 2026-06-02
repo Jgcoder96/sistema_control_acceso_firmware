@@ -17,7 +17,7 @@ void handle_child_to_root(const app_packet_t *msg) {
   if (msg->msg_type == MSG_TYPE_CARD) {
     mqtt_publisher("mesh/config", *msg);
   } else if (msg->msg_type == MSG_TYPE_INITIAL_SYNC) {
-    mqtt_publisher("device/sync", *msg);
+    mqtt_publisher("device/sync/request", *msg);
   }
   
 }

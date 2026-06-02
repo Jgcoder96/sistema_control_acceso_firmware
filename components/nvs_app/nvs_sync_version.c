@@ -2,6 +2,9 @@
 #include "nvs.h"
 #include "esp_log.h"
 #include "esp_random.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
 
 #include "app_types.h"
 #include "mqtt_publisher.h"
@@ -11,59 +14,72 @@
 
 static const char *TAG = "NVS_SYNC_VERSION";
 
-#define MIN_DELAY_MS 20000
-#define MAX_DELAY_MS 40000
+extern SemaphoreHandle_t sync_trigger_sem;
+
+#define RETRY_DELAY_MIN_MS 10000
+#define RETRY_DELAY_MAX_MS 20000
+#define SECURITY_TIMEOUT_MS 600000 
 
 void nvs_sync_version(void *pvParameters) {
   char saved_version_str[32];
     
   while (1) {
-    uint32_t random_ms = MIN_DELAY_MS + (esp_random() % (MAX_DELAY_MS - MIN_DELAY_MS + 1));
-    vTaskDelay(pdMS_TO_TICKS(random_ms));
-
-    if (node_mesh_info.is_synchronized) {
-      ESP_LOGI(TAG, "[NVS] Nodo ya sincronizado. Finalizando tarea.");
-      vTaskDelete(NULL);
-      return;
-    }
-
-    uint32_t current_version = 0;
-    sync_state_t current_state = SYNC_STATE_NONE;
-
-    size_t size = sizeof(saved_version_str);
-    esp_err_t err = nvs_get_version(saved_version_str, size);
-
-    if (err == ESP_OK) {
-      current_version = (uint32_t)atoi(saved_version_str);
-      current_state = SYNC_STATE_CHECK_VER;
+    if (xSemaphoreTake(sync_trigger_sem, pdMS_TO_TICKS(SECURITY_TIMEOUT_MS)) == pdTRUE) {
+      ESP_LOGI(TAG, "[NVS] Señal de sincronización recibida.");
     } else {
-      current_version = 0;
-      current_state = SYNC_STATE_NONE;
+      ESP_LOGI(TAG, "[NVS] Timeout de seguridad. Verificando sincronización...");
     }
 
-    app_packet_t packet;
-    memset(&packet, 0, sizeof(app_packet_t));  
-    packet.msg_type = MSG_TYPE_INITIAL_SYNC;
-    memcpy(packet.source_mac, node_mesh_info.mac, 6);
-                
-    packet.payload.initial_sync_event.state = current_state;
-    packet.payload.initial_sync_event.version = current_version;
+    while (!node_mesh_info.is_synchronized) {
+      
+      uint32_t current_version = 0;
+      sync_state_t current_state = SYNC_STATE_NONE;
 
+      size_t size = sizeof(saved_version_str);
+      esp_err_t err = nvs_get_version(saved_version_str, size);
 
-    if (node_mesh_info.is_root) {
-      if (node_mesh_info.is_mqtt_connected) {
-        mqtt_publisher("device/sync", packet);
-
-        ESP_LOGI(TAG, "[NVS] Petición de sincronización enviada (Ver: %d)", (int)current_version);
+      if (err == ESP_OK) {
+        current_version = (uint32_t)atoi(saved_version_str);
+        current_state = SYNC_STATE_CHECK_VER;
+      } else {
+        current_version = 0;
+        current_state = SYNC_STATE_NONE;
       }
-    } else {
-      if (node_mesh_info.is_mesh_connected && node_mesh_info.is_mqtt_connected) {
-        
-        send_upstream(&packet);
 
-        ESP_LOGI(TAG, "[NVS] Petición de sincronización enviada (Ver: %d)", (int)current_version);
+      app_packet_t packet;
+      memset(&packet, 0, sizeof(app_packet_t));  
+      packet.msg_type = MSG_TYPE_INITIAL_SYNC;
+      memcpy(packet.source_mac, node_mesh_info.mac, 6);
+                  
+      packet.payload.initial_sync_event.state = current_state;
+      packet.payload.initial_sync_event.version = current_version;
+
+      bool sent = false;
+
+      if (node_mesh_info.is_root) {
+        if (node_mesh_info.is_mqtt_connected) {
+          mqtt_publisher("device/sync/request", packet);
+          sent = true;
+        }
+      } else {
+        if (node_mesh_info.is_mesh_connected && node_mesh_info.is_mqtt_connected) {
+          send_upstream(&packet);
+          sent = true;
+        }
       }
+
+      if (sent) {
+        ESP_LOGI(TAG, "[NVS] Petición enviada (Ver: %d). Esperando confirmación...", (int)current_version);
+      } else {
+        ESP_LOGW(TAG, "[NVS] No se pudo enviar. Sin conexión (MQTT/Mesh).");
+      }
+
+      uint32_t retry_ms = RETRY_DELAY_MIN_MS + (esp_random() % (RETRY_DELAY_MAX_MS - RETRY_DELAY_MIN_MS + 1));
+
+      vTaskDelay(pdMS_TO_TICKS(retry_ms));
+
     }
-    
+
+    ESP_LOGI(TAG, "[NVS] Sincronización completada con éxito. Tarea en reposo.");
   }
 }

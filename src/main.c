@@ -1,12 +1,12 @@
+#include "check_system_version.h"
+#include "log_configuration.h"
 #include "mqtt_init.h"
+#include "nvs_init.h"
 #include "rtc_init.h"
 #include "wiegand_init.h"
+#include "wifi_mesh_event_handler.h"
 #include "wifi_mesh_init.h"
 #include "wifi_mesh_setup.h"
-#include "nvs_init.h"
-#include "check_system_version.h"
-#include "wifi_mesh_event_handler.h"
-#include "log_configuration.h"
 
 //static const char *TAG = "MAIN_APP";
 

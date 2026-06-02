@@ -9,6 +9,7 @@
 #include "mqtt_subscriber.h"
 #include "wifi_mesh_info.h"
 #include "mqtt_status_broadcast_task.h"
+#include "nvs_init.h"
 
 static const char *TAG = "MQTT_MANAGER";
 
@@ -24,25 +25,37 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     case MQTT_EVENT_CONNECTED:
         esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_CONFIG_DEVICE, 1);
         esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_CONFIG_ALL_DEVICE, 1);
+        esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_SYNC_RESPONSE, 1);
         break;
 
     case MQTT_EVENT_DATA: {
-      mqtt_received_data_t mqtt_received_data;
-      memset(&mqtt_received_data, 0, sizeof(mqtt_received_data));
-            
-      int t_len = event->topic_len > 63 ? 63 : event->topic_len;
-      int d_len = event->data_len > 127 ? 127 : event->data_len;
-            
-      memcpy(mqtt_received_data.topic, event->topic, t_len);
-      mqtt_received_data.topic[t_len] = '\0';
-      memcpy(mqtt_received_data.data, event->data, d_len);
-      mqtt_received_data.data[d_len] = '\0';
+      mqtt_received_data_t *msg = malloc(sizeof(mqtt_received_data_t));
+      if (msg == NULL) return;
 
-      xQueueSend(mqtt_subscription_queue, &mqtt_received_data, 0);
+      msg->data = malloc(event->data_len + 1);
+      if (msg->data == NULL) {
+        free(msg);
+        return;
+      }
+
+      int t_len = (event->topic_len >= 64) ? 63 : event->topic_len;
+      memcpy(msg->topic, event->topic, t_len);
+      msg->topic[t_len] = '\0';
+
+      memcpy(msg->data, event->data, event->data_len);
+      msg->data[event->data_len] = '\0'; 
+      msg->data_len = event->data_len;
+
+    
+      if (xQueueSend(mqtt_subscription_queue, &msg, 0) != pdPASS) {
+        free(msg->data);
+        free(msg);
+      }
       break;
     }
-      default:
-        break;
+
+    default:
+      break;
   }
 }
 
@@ -59,8 +72,11 @@ void mqtt_management_task(void *pvParameters) {
       if (condition_met && !mqtt_is_started) {
         ESP_LOGI(TAG, "[MQTT] Dispositivo elegido como root y cuenta con conexión a Internet. Iniciando MQTT...");
         esp_mqtt_client_start(client);
+
         mqtt_is_started = true;
         node_mesh_info.is_mqtt_connected = true;
+        nvs_sync_trigger();
+
         if (node_mesh_info.is_root == true) send_mqtt_status_update();
         ESP_LOGI(TAG, "[MQTT] Conectado a MQTT.");
       } else if (!condition_met && mqtt_is_started) {

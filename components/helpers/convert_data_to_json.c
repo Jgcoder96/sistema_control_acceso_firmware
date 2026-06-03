@@ -6,6 +6,7 @@
 
 char* packet_to_json(app_packet_t packet) {
   cJSON *root = cJSON_CreateObject();
+  
   if (root == NULL) return NULL;
 
   if (packet.msg_type == MSG_TYPE_CARD) {
@@ -29,6 +30,10 @@ char* packet_to_json(app_packet_t packet) {
     } else {
       cJSON_AddBoolToObject(root, "full_sync_required", false);
     }
+  } else if (packet.msg_type == MSG_TYPE_SYNC_ACK) {
+    cJSON_AddStringToObject(root, "type", "sync_successful");
+    cJSON_AddNumberToObject(root, "version", packet.payload.sync_ack_event.version);
+    cJSON_AddBoolToObject(root, "success", packet.payload.sync_ack_event.success);
   }
 
   char mac_src[18];

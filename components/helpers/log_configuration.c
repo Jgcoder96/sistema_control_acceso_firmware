@@ -10,9 +10,11 @@ void log_configuration() {
   esp_log_level_set("MQTT_PUBLISHER", ESP_LOG_INFO);
   esp_log_level_set("MQTT_STATUS_BROADCAST", ESP_LOG_INFO);
   esp_log_level_set("MQTT_SUBSCRIBER", ESP_LOG_INFO);
+  esp_log_level_set("MQTT_SUBSCRIPTION_MANAGER", ESP_LOG_INFO);
 
   esp_log_level_set("NVS_INIT", ESP_LOG_INFO);
   esp_log_level_set("NVS_SYNC_VERSION", ESP_LOG_INFO);
+  esp_log_level_set("NVS_SYNC_PERMISSIONS", ESP_LOG_INFO);
 
   
   esp_log_level_set("RTC_GET_TIME_FROM_MODULE", ESP_LOG_INFO);
@@ -28,4 +30,9 @@ void log_configuration() {
   esp_log_level_set("WIFI_MESH_INIT", ESP_LOG_INFO);
   esp_log_level_set("WIFI_MESH_SETUP", ESP_LOG_INFO);
   esp_log_level_set("RSSI_MONITOR", ESP_LOG_INFO);
+  esp_log_level_set("WIFI_MESH_NODE_LOGIC", ESP_LOG_INFO);
+
+  esp_log_level_set("SHOW_PERMISSIONS_TO_SYNC", ESP_LOG_INFO);
+  
+
 }

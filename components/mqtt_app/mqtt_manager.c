@@ -21,12 +21,12 @@ esp_mqtt_client_handle_t client = NULL;
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
   esp_mqtt_event_handle_t event = event_data;
+
   switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
-        esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_CONFIG_DEVICE, 1);
-        esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_CONFIG_ALL_DEVICE, 1);
-        esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_SYNC_RESPONSE, 1);
-        break;
+      esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_SYNC_RESPONSE, 1);
+      esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_SYNC_TRIGGER, 1);
+      break;
 
     case MQTT_EVENT_DATA: {
       mqtt_received_data_t *msg = malloc(sizeof(mqtt_received_data_t));
@@ -71,19 +71,26 @@ void mqtt_management_task(void *pvParameters) {
     bool condition_met = (node_mesh_info.is_internet_available && node_mesh_info.is_root);
       if (condition_met && !mqtt_is_started) {
         ESP_LOGI(TAG, "[MQTT] Dispositivo elegido como root y cuenta con conexión a Internet. Iniciando MQTT...");
+
         esp_mqtt_client_start(client);
 
         mqtt_is_started = true;
         node_mesh_info.is_mqtt_connected = true;
+
         nvs_sync_trigger();
 
         if (node_mesh_info.is_root == true) send_mqtt_status_update();
+
         ESP_LOGI(TAG, "[MQTT] Conectado a MQTT.");
+
       } else if (!condition_met && mqtt_is_started) {
         ESP_LOGW(TAG, "[MQTT] El dispositivo ha perdido el root o la conexión a Internet. Deteniendo MQTT...");
+
         esp_mqtt_client_stop(client);
+
         mqtt_is_started = false;
         node_mesh_info.is_mqtt_connected = false;
+        
         if (node_mesh_info.is_root == true) send_mqtt_status_update();
         
       }

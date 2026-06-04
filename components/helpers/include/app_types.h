@@ -4,7 +4,7 @@
 #include "esp_mesh.h"
 
 typedef struct {
-  uint8_t data[1000];       
+  uint8_t data[1200];       
   uint16_t len;           
   mesh_addr_t source_mac; 
 } mesh_packet_t;

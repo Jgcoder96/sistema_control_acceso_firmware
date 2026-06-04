@@ -24,7 +24,7 @@ void nvs_sync_version(void *pvParameters) {
   node_mesh_info.next_page_to_request = 1;
   node_mesh_info.is_synchronized = false;
 
-  static app_packet_t packet;
+  app_packet_t packet;
 
   while (1) {
     if (xSemaphoreTake(sync_trigger_sem, pdMS_TO_TICKS(SECURITY_TIMEOUT_MS)) == pdTRUE) {
@@ -74,6 +74,7 @@ void nvs_sync_version(void *pvParameters) {
         if (node_mesh_info.is_mesh_connected) {
           packet.type = CHILD_TO_ROOT;
           send_upstream(&packet);
+          ESP_LOGI(TAG, "[NVS] hola");
           sent = true;
         }
       }

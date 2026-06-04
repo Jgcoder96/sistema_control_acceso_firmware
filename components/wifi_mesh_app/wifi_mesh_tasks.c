@@ -38,17 +38,27 @@ void mesh_transmitter_task(void *arg) {
 void mesh_receiver_task(void *arg) {
   mesh_addr_t source_mac;
   int flag = 0;
-  static uint8_t rx_buf[512];
+  
+  static uint8_t rx_buf[1500]; 
+  
+  static mesh_packet_t q_msg; 
+
   while (1) {
     mesh_data_t data = {.data = rx_buf, .size = sizeof(rx_buf)};
 
     if (esp_mesh_recv(&source_mac, &data, portMAX_DELAY, &flag, NULL, 0) == ESP_OK) {
-      mesh_packet_t q_msg;
+      ESP_LOGI("ROOT_RX", "[WIFI_MESH] Paquete recibido de la malla: %d bytes", data.size);
+
+      memset(&q_msg, 0, sizeof(mesh_packet_t));
+
       q_msg.len = (data.size > sizeof(q_msg.data)) ? sizeof(q_msg.data) : data.size;
       q_msg.source_mac = source_mac;
+      
       memcpy(q_msg.data, data.data, q_msg.len);
 
-      xQueueSend(mesh_rx_queue, &q_msg, 0);
+      if (xQueueSend(mesh_rx_queue, &q_msg, 0) != pdPASS) {
+          ESP_LOGW("ROOT_RX", "[WIFI_MESH] Cola de recepción de malla llena");
+      }
     }
   }
 }

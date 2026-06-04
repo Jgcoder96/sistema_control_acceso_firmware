@@ -21,13 +21,24 @@ extern SemaphoreHandle_t sync_trigger_sem;
 #define SECURITY_TIMEOUT_MS 600000 
 
 void nvs_sync_version(void *pvParameters) {
+  node_mesh_info.next_page_to_request = 1;
+  node_mesh_info.is_synchronized = false;
+
+  static app_packet_t packet;
+
   while (1) {
     if (xSemaphoreTake(sync_trigger_sem, pdMS_TO_TICKS(SECURITY_TIMEOUT_MS)) == pdTRUE) {
-      ESP_LOGI(TAG, "[NVS] Señal de sincronización recibida.");
+      ESP_LOGI(TAG, "[NVS] Gatillo de sincronización activado.");
     } else {
-      ESP_LOGI(TAG, "[NVS] Verificación inicial de versión.");
+      ESP_LOGI(TAG, "[NVS] Verificación periódica (Timeout).");
     }
 
+    if (node_mesh_info.is_synchronized) {
+        node_mesh_info.is_synchronized = false;
+        node_mesh_info.next_page_to_request = 1;
+    }
+
+    
     while (!node_mesh_info.is_synchronized) {
       nvs_handle_t handle;
       uint32_t current_version = 0;
@@ -38,25 +49,19 @@ void nvs_sync_version(void *pvParameters) {
       if (err == ESP_OK) {       
         err = nvs_get_u32(handle, "sync_ver", &current_version);
         nvs_close(handle);
-                
-        if (err == ESP_OK) {
-          current_state = SYNC_STATE_CHECK_VER;
-          ESP_LOGI(TAG, "[NVS] Versión local encontrada: %lu", current_version);
-        } else {
-          ESP_LOGW(TAG, "[NVS] No hay versión previa. Sincronización inicial.");
-        }
+        if (err == ESP_OK) current_state = SYNC_STATE_CHECK_VER;
       }
 
-            
-      app_packet_t packet;
-      memset(&packet, 0, sizeof(app_packet_t)); 
+      memset(&packet, 0, sizeof(app_packet_t));
 
       packet.msg_type = MSG_TYPE_INITIAL_SYNC;
 
       memcpy(packet.source_mac, node_mesh_info.mac, 6);
-            
+
       packet.payload.initial_sync_event.state = current_state;
       packet.payload.initial_sync_event.version = current_version;
+      
+      packet.payload.initial_sync_event.page = node_mesh_info.next_page_to_request;
 
       bool sent = false;
 
@@ -74,15 +79,18 @@ void nvs_sync_version(void *pvParameters) {
       }
 
       if (sent) {
-        ESP_LOGI(TAG, "[NVS] Petición enviada (V.%lu). Esperando...", current_version);
+        ESP_LOGI(TAG, "[NVS] Petición V.%lu -> Pág %d enviada.", current_version, node_mesh_info.next_page_to_request);
       }
 
-            
       uint32_t retry_ms = RETRY_DELAY_MIN_MS + (esp_random() % (RETRY_DELAY_MAX_MS - RETRY_DELAY_MIN_MS + 1));
-
-      vTaskDelay(pdMS_TO_TICKS(retry_ms));  
+      
+      if (xSemaphoreTake(sync_trigger_sem, pdMS_TO_TICKS(retry_ms)) == pdTRUE) {
+          ESP_LOGI(TAG, "[NVS] Página recibida confirmada. Procesando siguiente paso...");
+      } else {
+          ESP_LOGW(TAG, "[NVS] Tiempo de espera agotado. Reintentando Pág %d...", node_mesh_info.next_page_to_request);
+      }
     }
 
-    ESP_LOGI(TAG, "[NVS] Sistema sincronizado. Tarea en reposo.");
+    ESP_LOGI(TAG, "[NVS] Sincronización completada. Durmiendo tarea.");
   }
 }

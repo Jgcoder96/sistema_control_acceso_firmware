@@ -4,7 +4,7 @@
 #include "esp_mesh.h"
 
 typedef struct {
-  uint8_t data[250];       
+  uint8_t data[1000];       
   uint16_t len;           
   mesh_addr_t source_mac; 
 } mesh_packet_t;
@@ -42,6 +42,7 @@ typedef enum {
 typedef struct {
   sync_state_t state;    
   uint32_t version;    
+  uint16_t page;
 } initial_sync_event_t;
 
 // estructura para evento de respuesta de sincronización
@@ -61,9 +62,11 @@ typedef struct {
 
 typedef struct {
   uint32_t version;
+  uint16_t current_page; 
+  uint16_t total_pages;
   uint16_t festivos_len;  
   uint16_t permisos_len;   
-  uint8_t data[200];      
+  uint8_t data[1000];      
 } sync_data_event_t;
 #pragma pack(pop)
 

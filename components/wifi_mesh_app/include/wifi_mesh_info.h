@@ -13,6 +13,7 @@ typedef struct {
   bool is_mesh_connected;
   bool is_mqtt_connected;
   bool is_synchronized;
+  uint16_t next_page_to_request;
 
 } node_mesh_info_t;
 

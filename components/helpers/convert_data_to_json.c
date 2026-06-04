@@ -25,6 +25,7 @@ char* packet_to_json(app_packet_t packet) {
     cJSON_AddStringToObject(root, "type", "sync_request");
     
     cJSON_AddNumberToObject(root, "version", packet.payload.initial_sync_event.version);
+    cJSON_AddNumberToObject(root, "page", packet.payload.initial_sync_event.page);
     
     if (packet.payload.initial_sync_event.state == SYNC_STATE_NONE) {
       cJSON_AddBoolToObject(root, "full_sync_required", true);

@@ -28,7 +28,7 @@ void mqtt_subscription_handler_task(void *pvParameters) {
         
         cJSON_Delete(root);
       } else {
-          ESP_LOGE(TAG, "Error JSON: %s", cJSON_GetErrorPtr());
+          ESP_LOGE(TAG, "[MQTT] Error JSON: %s", cJSON_GetErrorPtr());
       }
         
       free(received_ptr->data);

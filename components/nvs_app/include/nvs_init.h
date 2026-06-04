@@ -2,7 +2,7 @@
 #define NVS_INIT_H
 
 #define NVS_SYNC_VERSION_TASK_PRIO 5
-#define NVS_SYNC_VERSION_TASK_SIZE 3072
+#define NVS_SYNC_VERSION_TASK_SIZE 8192
 
 void nvs_init(void);
 void nvs_storage_init(void);

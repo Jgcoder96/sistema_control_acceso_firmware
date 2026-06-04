@@ -1,6 +1,8 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 
+//static const char *TAG = "NVS_GET_VERSION";
+
 esp_err_t nvs_get_version(char* version, size_t length) {
   nvs_handle_t my_handle;
   esp_err_t err;

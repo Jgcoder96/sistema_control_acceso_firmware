@@ -1,4 +1,3 @@
-#include "check_system_version.h"
 #include "log_configuration.h"
 #include "mqtt_init.h"
 #include "nvs_init.h"
@@ -22,8 +21,5 @@ void app_main(void) {
   
   mqtt_init();
   rtc_app_init();
-  
-
-  //check_system_version();
 
 }

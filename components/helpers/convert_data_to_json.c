@@ -13,6 +13,7 @@ char* packet_to_json(app_packet_t packet) {
     cJSON_AddStringToObject(root, "card_id", packet.payload.access_event.card_id);
 
     time_t t = (time_t)packet.payload.access_event.timestamp;
+    
     struct tm timeinfo;
 
     localtime_r(&t, &timeinfo);

@@ -17,8 +17,6 @@ typedef enum {
 
 typedef enum {
   MSG_TYPE_CARD,     
-  MSG_TYPE_CONFIG_DEVICE,
-  MSG_TYPE_CONFIG_ALL_DEVICES,
   MSG_TYPE_RTC_SYNC,
   MSG_TYPE_MQTT_STATUS,
   MSG_TYPE_INITIAL_SYNC,
@@ -102,8 +100,7 @@ typedef struct {
     sync_data_event_t sync_data_event;
     sync_ack_event_t sync_ack_event;
     sync_trigger_event_t sync_trigger_event;
-
-    char accion[16];   
+  
     uint32_t timestamp;      
   } payload;                   
 } app_packet_t;

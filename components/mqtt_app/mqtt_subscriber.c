@@ -23,18 +23,16 @@ void mqtt_subscription_handler_task(void *pvParameters) {
       if (root != NULL) {
         cJSON *actual_root = cJSON_IsArray(root) ? cJSON_GetArrayItem(root, 0) : root;
 
-        if (strcmp(received_ptr->topic, SUBSCRIBE_IN_TOPIC_SYNC_RESPONSE) == 0) {
-          procesar_mensaje_sincronizacion(actual_root);
-        } else if (strcmp(received_ptr->topic, SUBSCRIBE_IN_TOPIC_SYNC_TRIGGER) == 0) {
-          subscription_manager_sync_trigger(actual_root);
-        }
-
+        if (strcmp(received_ptr->topic, SUBSCRIBE_IN_TOPIC_SYNC_RESPONSE) == 0) subscription_manager_sync_device(actual_root);
+        else if (strcmp(received_ptr->topic, SUBSCRIBE_IN_TOPIC_SYNC_TRIGGER) == 0) subscription_manager_sync_trigger(actual_root);
+        
         cJSON_Delete(root);
       } else {
-          ESP_LOGE("SUB", "Error JSON: %s", cJSON_GetErrorPtr());
+          ESP_LOGE(TAG, "Error JSON: %s", cJSON_GetErrorPtr());
       }
         
       free(received_ptr->data);
+
       free(received_ptr);
     }
   }

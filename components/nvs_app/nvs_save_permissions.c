@@ -15,24 +15,24 @@
 static const char *TAG = "NVS_SYNC_PERMISSIONS";
 
 static void notify_server_of_successful_save(uint32_t version, bool exito) {
-    app_packet_t ack_packet;
-    memset(&ack_packet, 0, sizeof(app_packet_t));
+  app_packet_t ack_packet;
+  memset(&ack_packet, 0, sizeof(app_packet_t));
 
-    ack_packet.msg_type = MSG_TYPE_SYNC_ACK;
+  ack_packet.msg_type = MSG_TYPE_SYNC_ACK;
     
-    memcpy(ack_packet.source_mac, node_mesh_info.mac, 6);
+  memcpy(ack_packet.source_mac, node_mesh_info.mac, 6);
     
-    ack_packet.payload.sync_ack_event.version = version;
+  ack_packet.payload.sync_ack_event.version = version;
     
-    ack_packet.payload.sync_ack_event.success = exito;
+  ack_packet.payload.sync_ack_event.success = exito;
     
 
-    if (node_mesh_info.is_root) {
-      mqtt_publisher("device/sync/successful", ack_packet);
-    } else {
-      ack_packet.type = CHILD_TO_ROOT;
-      send_upstream(&ack_packet);
-    }
+  if (node_mesh_info.is_root) {
+    mqtt_publisher("device/sync/successful", ack_packet);
+  } else {
+    ack_packet.type = CHILD_TO_ROOT;
+    send_upstream(&ack_packet);
+  }
 }
 
 
@@ -87,7 +87,7 @@ void nvs_save_permissions(const sync_data_event_t *sync_ev) {
         
     nvs_set_blob(handle, key, (p_ptr + offset + 4), tam_reglas);
         
-    offset += 4 + tam_reglas; // Saltamos ID(4) + bloque de reglas
+    offset += 4 + tam_reglas;
     contador++;
   }
 

@@ -14,7 +14,7 @@
 #include "sync_device_trigger.h"
 
 
-static const char *TAG = "WIFI_MESH_NODE_LOGIC";
+//static const char *TAG = "WIFI_MESH_NODE_LOGIC";
 
 void handle_child_to_root(const app_packet_t *msg) {
   switch (msg->msg_type) {

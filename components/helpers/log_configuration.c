@@ -7,6 +7,7 @@ void log_configuration() {
   esp_log_level_set("mesh", ESP_LOG_NONE);
 
   esp_log_level_set("SHOW_PERMISSIONS_TO_SYNC", ESP_LOG_INFO);
+  esp_log_level_set("RGB_LED_DRIVER", ESP_LOG_INFO);
 
   esp_log_level_set("MQTT_MANAGER", ESP_LOG_INFO);
   esp_log_level_set("MQTT_PUBLISHER", ESP_LOG_INFO);
@@ -37,5 +38,6 @@ void log_configuration() {
   esp_log_level_set("WIFI_MESH_SETUP", ESP_LOG_INFO);
   esp_log_level_set("WIFI_MESH_TASKS", ESP_LOG_INFO);
 
+  esp_log_level_set("MAIN_APP", ESP_LOG_INFO);
 
 }

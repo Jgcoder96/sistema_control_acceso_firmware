@@ -28,6 +28,7 @@ void log_configuration() {
   esp_log_level_set("RTC_SET_TIME_FROM_NTP_SERVER", ESP_LOG_INFO);
 
   esp_log_level_set("WIEGAND_INIT", ESP_LOG_INFO);
+  esp_log_level_set("WIEGAND_PROCESS_DATA_TASK", ESP_LOG_INFO);
 
   esp_log_level_set("RSSI_MONITOR", ESP_LOG_INFO);
   esp_log_level_set("WIFI_MESH_EVENT_HANDLER", ESP_LOG_INFO);

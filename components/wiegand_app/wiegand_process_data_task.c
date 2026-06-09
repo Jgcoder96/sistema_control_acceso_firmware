@@ -13,8 +13,12 @@
 #include "wifi_mesh_transmission.h"
 #include "wifi_mesh_info.h"
 #include "rgb_led.h"
+#include "hardware_control_task.h"
 
 static const char *TAG = "WIEGAND_PROCESS_DATA_TASK";
+
+extern QueueHandle_t wiegand_reader_queue;
+extern QueueHandle_t hardware_control_queue;
 
 static bool validate_local_access(uint64_t full_id) {
   nvs_handle_t handle;
@@ -26,6 +30,7 @@ static bool validate_local_access(uint64_t full_id) {
   snprintf(key, sizeof(key), "%lu", card_id_32);
 
   esp_err_t err = nvs_open("storage", NVS_READONLY, &handle);
+
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "Error abriendo NVS: %s", esp_err_to_name(err));
     return false;
@@ -35,25 +40,21 @@ static bool validate_local_access(uint64_t full_id) {
   permitted = (err == ESP_OK);
   nvs_close(handle);
 
-  if (permitted) {
-    ESP_LOGI(TAG, "✅ Acceso permitido para ID: %s", key);
-    rgb_led_set_color(0, 255, 0); 
-  } else {
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-      ESP_LOGW(TAG, "❌ Tarjeta no registrada: %s", key);
-    } else {
-      ESP_LOGE(TAG, "❌ Error al buscar en NVS: %s", esp_err_to_name(err));
-    }
-    rgb_led_set_color(255, 0, 0); 
+  hardware_cmd_t action = { .permitted = permitted };
+  if (hardware_control_queue != NULL) {
+    xQueueSend(hardware_control_queue, &action, 0); // Envía la orden a la otra tarea
   }
 
-  vTaskDelay(pdMS_TO_TICKS(2000));
-  rgb_led_clear();
+  //if (permitted) {
+    //ESP_LOGI(TAG, "✅ Acceso permitido para ID: %s", key);
+    //rgb_led_set_color(0, 255, 0); 
+  //} else {
+    //ESP_LOGW(TAG, "❌ Tarjeta no registrada: %s", key);
+    //rgb_led_set_color(255, 0, 0); 
+  //}
 
   return permitted;
 }
-
-extern QueueHandle_t wiegand_reader_queue;
 
 void wiegand_process_data_task(void *pvParameters) {
   wiegand_card_t card;

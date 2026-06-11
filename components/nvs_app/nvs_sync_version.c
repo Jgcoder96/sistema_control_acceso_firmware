@@ -74,7 +74,6 @@ void nvs_sync_version(void *pvParameters) {
         if (node_mesh_info.is_mesh_connected) {
           packet.type = CHILD_TO_ROOT;
           send_upstream(&packet);
-          ESP_LOGI(TAG, "[NVS] hola");
           sent = true;
         }
       }

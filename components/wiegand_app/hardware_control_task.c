@@ -30,7 +30,7 @@ void hardware_control_task(void *pvParameters) {
         gpio_set_level(PIN_LED_L1, 1);
       }
 
-      vTaskDelay(pdMS_TO_TICKS(2000));
+      vTaskDelay(pdMS_TO_TICKS(3000));
 
       gpio_set_level(PIN_RELE, 0);
       gpio_set_level(PIN_LED_L2, 0);

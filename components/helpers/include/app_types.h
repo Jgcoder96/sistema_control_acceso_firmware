@@ -29,7 +29,8 @@ typedef enum {
 
 typedef struct {
   char card_id[21];     
-  uint32_t timestamp;   
+  uint32_t timestamp;  
+  bool access;  
 } access_event_t;
 
 // estructura para evento de petición de sincronización

@@ -115,13 +115,14 @@ void wiegand_process_data_task(void *pvParameters) {
     
   while (1) {
     if (xQueueReceive(wiegand_reader_queue, &card, portMAX_DELAY) == pdTRUE) {
-      validate_local_access(card.full_id);
+      bool access_granted = validate_local_access(card.full_id);
 
       static app_packet_t data;
       memset(&data, 0, sizeof(data));
       memcpy(data.source_mac, node_mesh_info.mac, 6);
       data.msg_type = MSG_TYPE_CARD;
       data.payload.access_event.timestamp = (uint32_t)time(NULL);
+      data.payload.access_event.access = access_granted;
       snprintf(data.payload.access_event.card_id, sizeof(data.payload.access_event.card_id), "%" PRIu64, card.full_id);
 
       send_upstream(&data);

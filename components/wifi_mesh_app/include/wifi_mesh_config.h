@@ -6,8 +6,11 @@
 //#define WIFI_SSID           "SovUrb"
 //#define WIFI_PWD            "Sovij000926689"
 
-#define WIFI_SSID           "Sin Servicio"
-#define WIFI_PWD            "Jesus.040620"
+//#define WIFI_SSID           "Sin Servicio"
+//#define WIFI_PWD            "Jesus.040620"
+
+#define WIFI_SSID           "Alexa"
+#define WIFI_PWD            "V5221329"
 
 #define MESH_PASSWORD       "MAPLE_MESH_123"
 #define MESH_CHANNEL        0                 

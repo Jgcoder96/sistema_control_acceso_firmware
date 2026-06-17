@@ -14,6 +14,8 @@
 #include "wifi_mesh_info.h"
 #include "rgb_led.h"
 #include "hardware_control_task.h"
+#include "nvs_offline_events.h"
+
 
 static const char *TAG = "WIEGAND_PROCESS_DATA_TASK";
 
@@ -117,16 +119,24 @@ void wiegand_process_data_task(void *pvParameters) {
     if (xQueueReceive(wiegand_reader_queue, &card, portMAX_DELAY) == pdTRUE) {
       bool access_granted = validate_local_access(card.full_id);
 
-      static app_packet_t data;
-      memset(&data, 0, sizeof(data));
-      memcpy(data.source_mac, node_mesh_info.mac, 6);
-      data.msg_type = MSG_TYPE_CARD;
-      data.payload.access_event.timestamp = (uint32_t)time(NULL);
-      data.payload.access_event.access = access_granted;
-      snprintf(data.payload.access_event.card_id, sizeof(data.payload.access_event.card_id), "%" PRIu64, card.full_id);
+      // Creamos el evento de acceso
+      access_event_t event;
+      event.timestamp = (uint32_t)time(NULL);
+      event.access = access_granted;
+      snprintf(event.card_id, sizeof(event.card_id), "%" PRIu64, card.full_id);
 
-      send_upstream(&data);
-      ESP_LOGI(TAG, "Evento Mesh enviado.");
+      // Decidimos: ¿Enviar o Guardar?
+      if (node_mesh_info.is_mqtt_connected) {
+          static app_packet_t data;
+          memset(&data, 0, sizeof(data));
+          memcpy(data.source_mac, node_mesh_info.mac, 6);
+          data.msg_type = MSG_TYPE_CARD;
+          data.payload.access_event = event;
+
+          send_upstream(&data);
+      } else {
+          store_event_offline(&event);
+      }
     }
   }
 }

@@ -4,6 +4,9 @@
 #define NVS_SYNC_VERSION_TASK_PRIO 5
 #define NVS_SYNC_VERSION_TASK_SIZE 8192
 
+#define NVS_OFFLINE_EVENTS_TASK_PRIO 5
+#define NVS_OFFLINE_EVENTS_TASK_SIZE 4096
+
 void nvs_init(void);
 void nvs_storage_init(void);
 void nvs_sync_trigger(void);

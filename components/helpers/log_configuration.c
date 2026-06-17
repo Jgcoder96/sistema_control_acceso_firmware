@@ -22,6 +22,8 @@ void log_configuration() {
   esp_log_level_set("NVS_INIT", ESP_LOG_INFO);
   esp_log_level_set("NVS_SYNC_PERMISSIONS", ESP_LOG_INFO);
   esp_log_level_set("NVS_SYNC_VERSION", ESP_LOG_INFO);
+  esp_log_level_set("NVS_OFFLINE_STORAGE", ESP_LOG_INFO);
+  esp_log_level_set("SYNC_TASK", ESP_LOG_INFO);
 
   
   esp_log_level_set("RTC_GET_TIME_FROM_MODULE", ESP_LOG_INFO);

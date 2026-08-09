@@ -15,6 +15,7 @@
 #include "rgb_led.h"
 #include "hardware_control_task.h"
 #include "nvs_offline_events.h"
+#include "buzzer_app.h"
 
 
 static const char *TAG = "WIEGAND_PROCESS_DATA_TASK";
@@ -117,6 +118,8 @@ void wiegand_process_data_task(void *pvParameters) {
     
   while (1) {
     if (xQueueReceive(wiegand_reader_queue, &card, portMAX_DELAY) == pdTRUE) {
+      buzzer_app_beep(2000, 100); // Pitido corto al leer la tarjeta
+      
       bool access_granted = validate_local_access(card.full_id);
 
       // Creamos el evento de acceso

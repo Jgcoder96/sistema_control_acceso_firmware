@@ -8,6 +8,7 @@
 #include "wifi_mesh_setup.h"
 #include "rgb_led.h"
 #include "esp_log.h"
+#include "buzzer_app.h"
 
 #include "driver/gpio.h"
 
@@ -21,6 +22,7 @@ void app_main(void) {
   gpio_set_level(GPIO_NUM_33, 1); 
 
   rgb_led_init();
+  buzzer_app_init();
     
   nvs_init();
   wiegand_init();

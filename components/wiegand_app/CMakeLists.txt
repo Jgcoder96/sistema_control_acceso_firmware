@@ -7,5 +7,5 @@ idf_component_register(
          "wiegand_setup.c"
          "hardware_control_task.c"
     INCLUDE_DIRS "include"
-    REQUIRES freertos driver mqtt_app helpers
+    REQUIRES freertos driver mqtt_app helpers buzzer_app
 )

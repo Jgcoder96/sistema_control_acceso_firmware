@@ -1,3 +1,7 @@
+/**
+ * @file wifi_mesh_tasks.c
+ * @brief Implementación de las tareas RX, TX y Procesamiento de la malla.
+ */
 #include "esp_log.h"
 #include "esp_mac.h" 
 #include <string.h>
@@ -16,15 +20,17 @@ void mesh_transmitter_task(void *arg) {
   app_packet_t app_packet;
   while (1) {
     if (xQueueReceive(mesh_tx_queue, &app_packet, portMAX_DELAY) == pdTRUE) {
+      // Convertir paquete de aplicación a paquete binario Mesh
       mesh_data_t data = {
         .data = (uint8_t *)&app_packet, 
         .size = sizeof(app_packet), 
         .proto = MESH_PROTO_BIN, 
-        .tos = MESH_TOS_P2P
+        .tos = MESH_TOS_P2P // Punto a punto
       };
       mesh_addr_t target;
       mesh_addr_t *dest_ptr = NULL;
 
+      // Si somos root y el paquete va dirigido a alguien (no es hacia arriba)
       if (esp_mesh_is_root()) {
         memcpy(target.addr, app_packet.destination_mac, 6);
         dest_ptr = &target;
@@ -86,6 +92,7 @@ void mesh_processor_task(void *arg) {
           break;
 
         case ROOT_TO_CHILD:
+          // Unicast, Root le manda algo directo a este nodo
           handle_root_to_child(msg, node_mesh_info.mac);
           break;
 

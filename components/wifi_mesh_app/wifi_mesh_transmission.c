@@ -1,3 +1,7 @@
+/**
+ * @file wifi_mesh_transmission.c
+ * @brief Funciones auxiliares para enrutar datos hacia arriba y abajo en la malla.
+ */
 #include "app_types.h"
 #include "wifi_mesh_tasks.h"
 
@@ -29,6 +33,7 @@ void send_downstream(app_packet_t *data) {
   int route_size = 0;
   char buf[48];
 
+  // Comprobar que realmente tenemos hijos (al menos alguien en la tabla de ruteo)
   if (esp_mesh_get_routing_table(route_table, sizeof(route_table), &route_size) == ESP_OK && route_size > 1) {
     snprintf(buf, sizeof(buf), "[ROOT -> HIJO]");
     send_mesh_packet(data, ROOT_TO_CHILD, data->destination_mac, buf);

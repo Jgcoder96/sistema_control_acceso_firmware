@@ -1,3 +1,7 @@
+/**
+ * @file wifi_mesh_init.c
+ * @brief Implementación de la inicialización de colas y tareas Mesh.
+ */
 #include "esp_log.h"
 #include "esp_mac.h"
 
@@ -21,6 +25,7 @@ void wifi_mesh_init(void) {
   esp_mesh_get_config(&cfg);
   memcpy(node_mesh_info.mesh_id.addr, cfg.mesh_id.addr, 6);
 
+  // Crear colas de envío/recepción de paquetes Mesh
   mesh_rx_queue = xQueueCreate(MESH_RX_QUEUE_LENGTH, sizeof(mesh_packet_t));
   mesh_tx_queue = xQueueCreate(MESH_TX_QUEUE_LENGTH, sizeof(app_packet_t));
 

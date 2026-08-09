@@ -1,3 +1,7 @@
+/**
+ * @file wifi_mesh_event_handler.c
+ * @brief Manejador de eventos del sistema para red e IP.
+ */
 #include "esp_log.h"
 #include "esp_mac.h"
 
@@ -21,10 +25,11 @@ void wifi_mesh_event_handler(void *arg, esp_event_base_t event_base, int32_t eve
 
         if (node_mesh_info.is_root) {
           ESP_LOGI(TAG, "[WIFI_MESH] Dispositivo conectado como nodo raíz.");
+          // Si somos Root, pedir IP por DHCP al Router externo
           if (netif_sta) esp_netif_dhcpc_start(netif_sta);
         } else {
           ESP_LOGI(TAG, "[WIFI_MESH] Dispositivo conectado como nodo intermedio.");
-          node_mesh_info.is_internet_available = false;
+          node_mesh_info.is_internet_available = false; // Solo el root sale a internet
         }
         break;
 

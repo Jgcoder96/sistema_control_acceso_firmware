@@ -1,3 +1,7 @@
+/**
+ * @file wifi_mesh_node_logic.c
+ * @brief Lógica central para interpretar y rutear mensajes recibidos.
+ */
 #include <sys/time.h>  
 #include <inttypes.h>   
 #include "esp_log.h"
@@ -17,6 +21,7 @@
 //static const char *TAG = "WIFI_MESH_NODE_LOGIC";
 
 void handle_child_to_root(const app_packet_t *msg) {
+  // Los mensajes que suben hacia el Root normalmente se publican en MQTT
   switch (msg->msg_type) {
     case MSG_TYPE_CARD:
       mqtt_publisher("device/access/event", *msg);
@@ -55,6 +60,7 @@ void handle_root_to_all_children(const app_packet_t *msg) {
 }
 
 void handle_root_to_child(const app_packet_t *msg, const uint8_t *my_mac) {
+  // Ignorar si el paquete no es para mi MAC
   if (memcmp(msg->destination_mac, node_mesh_info.mac, 6) != 0) {
     return;
   }

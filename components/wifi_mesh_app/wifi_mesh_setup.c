@@ -1,3 +1,7 @@
+/**
+ * @file wifi_mesh_setup.c
+ * @brief Implementación de la creación del stack LwIP y WiFi Mesh.
+ */
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_mesh.h"

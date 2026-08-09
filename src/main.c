@@ -9,13 +9,20 @@
 #include "rgb_led.h"
 #include "esp_log.h"
 #include "buzzer_app.h"
+#include "display_app.h"
 
 #include "driver/gpio.h"
+#include <stdlib.h>
+#include <time.h>
 
 static const char *TAG = "MAIN_APP";
 
 void app_main(void) {
   log_configuration();
+
+  // Configurar zona horaria desde el inicio para todas las tareas
+  setenv("TZ", "VET4", 1);
+  tzset();
 
   gpio_reset_pin(GPIO_NUM_33);
   gpio_set_direction(GPIO_NUM_33, GPIO_MODE_OUTPUT);
@@ -23,6 +30,7 @@ void app_main(void) {
 
   rgb_led_init();
   buzzer_app_init();
+  display_app_init();
     
   nvs_init();
   wiegand_init();

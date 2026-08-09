@@ -124,6 +124,16 @@ static void oled_cmd(uint8_t cmd) {
     sw_i2c_stop();
 }
 
+// --- VARIABLES DE ESTADO PARA POPUP ---
+static int current_popup = 0; // 0 = normal, 1 = concedido, 2 = denegado
+static uint32_t popup_timeout_tick = 0;
+
+void display_app_show_popup(bool granted) {
+    current_popup = granted ? 1 : 2;
+    // Mostrar por 2.5 segundos (2500 ms)
+    popup_timeout_tick = xTaskGetTickCount() + pdMS_TO_TICKS(2500);
+}
+
 static void oled_update(void) {
     for (uint8_t i = 0; i < 8; i++) {
         oled_cmd(0xB0 + i);
@@ -224,6 +234,25 @@ static void display_task(void *pvParameters) {
 
         buf_clear();
 
+        uint32_t current_tick = xTaskGetTickCount();
+        if (current_popup != 0) {
+            if (current_tick < popup_timeout_tick) {
+                // Dibujar popup en el centro de la pantalla
+                if (current_popup == 1) {
+                    buf_draw_text(3, 16, "ACCESO CONCEDIDO");
+                } else {
+                    buf_draw_text(3, 20, "ACCESO DENEGADO");
+                }
+                oled_update();
+                vTaskDelay(pdMS_TO_TICKS(100)); // Actualización más rápida durante el popup
+                continue;
+            } else {
+                // El tiempo expiró, limpiar estado y volver a la pantalla normal
+                current_popup = 0;
+            }
+        }
+
+        // --- PANTALLA NORMAL ---
         // --- FILA 0: Rol y Señal ---
         if (node_mesh_info.is_root) {
             buf_draw_text(0, 0, "NODO ROOT");

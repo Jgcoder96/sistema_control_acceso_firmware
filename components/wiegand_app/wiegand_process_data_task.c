@@ -16,7 +16,7 @@
 #include "hardware_control_task.h"
 #include "nvs_offline_events.h"
 #include "buzzer_app.h"
-
+#include "display_app.h"
 
 static const char *TAG = "WIEGAND_PROCESS_DATA_TASK";
 
@@ -121,6 +121,9 @@ void wiegand_process_data_task(void *pvParameters) {
       buzzer_app_beep(2000, 100); // Pitido corto al leer la tarjeta
       
       bool access_granted = validate_local_access(card.full_id);
+      
+      // Mostrar en pantalla el resultado
+      display_app_show_popup(access_granted);
 
       // Creamos el evento de acceso
       access_event_t event;

@@ -9,6 +9,12 @@
  * (timers y canales PWM) e instanciar la tarea asíncrona de FreeRTOS.
  */
 
+/// Tamaño en bytes reservado para la pila (stack) de la tarea del buzzer
+#define BUZZER_TASK_SIZE 2048
+
+/// Prioridad asignada a la tarea en el scheduler de FreeRTOS
+#define BUZZER_TASK_PRIO 4
+
 /**
  * @brief Inicializa el hardware (PWM) para el buzzer y crea su tarea de FreeRTOS.
  *

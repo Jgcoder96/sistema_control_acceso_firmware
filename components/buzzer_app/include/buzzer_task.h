@@ -14,12 +14,6 @@
 #include "freertos/queue.h"
 #include "freertos/task.h"
 
-/// Tamaño en bytes reservado para la pila (stack) de la tarea del buzzer
-#define BUZZER_TASK_SIZE 2048
-
-/// Prioridad asignada a la tarea en el scheduler de FreeRTOS
-#define BUZZER_TASK_PRIO 4
-
 /**
  * @struct buzzer_cmd_t
  * @brief Estructura del comando enviado a la cola del buzzer.

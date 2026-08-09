@@ -9,7 +9,7 @@
 #include "rgb_led.h"
 #include "esp_log.h"
 #include "buzzer_init.h"
-#include "display_app.h"
+#include "display_init.h"
 
 #include "driver/gpio.h"
 #include <stdlib.h>

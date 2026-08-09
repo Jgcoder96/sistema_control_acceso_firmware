@@ -19,7 +19,7 @@
 void handle_child_to_root(const app_packet_t *msg) {
   switch (msg->msg_type) {
     case MSG_TYPE_CARD:
-      mqtt_publisher("mesh/config", *msg);
+      mqtt_publisher("device/access/event", *msg);
       break;
 
     case MSG_TYPE_INITIAL_SYNC:

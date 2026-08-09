@@ -8,7 +8,7 @@
 #include "wifi_mesh_setup.h"
 #include "rgb_led.h"
 #include "esp_log.h"
-#include "buzzer_app.h"
+#include "buzzer_init.h"
 #include "display_app.h"
 
 #include "driver/gpio.h"

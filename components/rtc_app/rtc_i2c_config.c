@@ -1,10 +1,16 @@
+/**
+ * @file rtc_i2c_config.c
+ * @brief Implementación de la configuración de bajo nivel I2C.
+ */
 #include "driver/i2c.h"
 
 #include "rtc_config.h"
 
 // static const char *TAG = "RTC_I2C_CONFIG";
 
-esp_err_t rtc_i2c_config() {
+// static const char *TAG = "RTC_I2C_CONFIG";
+
+esp_err_t rtc_i2c_config(void) {
   i2c_config_t i2c_config = {
     .mode = I2C_MODE_MASTER,
     .sda_io_num = I2C_MASTER_SDA_IO,

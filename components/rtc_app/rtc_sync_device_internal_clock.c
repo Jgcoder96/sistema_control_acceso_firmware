@@ -1,3 +1,7 @@
+/**
+ * @file rtc_sync_device_internal_clock.c
+ * @brief Implementación de la carga de hora desde I2C hacia el OS.
+ */
 #include <time.h>
 #include <sys/time.h>
 #include "driver/i2c.h"
@@ -13,6 +17,9 @@ void rtc_sync_device_internal_clock() {
 
   if (i2c_master_write_read_device(I2C_MASTER_NUM, DS1307_ADDR, &reg, 1, d, 7, pdMS_TO_TICKS(1000)) == ESP_OK) {  
     struct tm tm;
+    
+    // Los primeros 7 registros del DS3231 contienen segundos, min, hr, etc.
+    // Al leerlos, enmascaramos bits innecesarios y convertimos de BCD a decimal.
     tm.tm_sec = bcd_to_decimal(d[0] & 0x7F);
     tm.tm_min = bcd_to_decimal(d[1]);
     tm.tm_hour = bcd_to_decimal(d[2] & 0x3F);
@@ -21,10 +28,12 @@ void rtc_sync_device_internal_clock() {
     tm.tm_mon = bcd_to_decimal(d[5]) - 1;
     tm.tm_year = bcd_to_decimal(d[6]) + 100;
 
+    // Convertir todo a segundos formato UNIX Epoch
     time_t t = mktime(&tm);
 
     struct timeval now = { .tv_sec = t };
     
+    // Ajustar el reloj de FreeRTOS / ESP-IDF
     settimeofday(&now, NULL);
   }
 }

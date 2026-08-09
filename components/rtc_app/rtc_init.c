@@ -1,3 +1,7 @@
+/**
+ * @file rtc_init.c
+ * @brief Implementación de la inicialización de tareas RTC.
+ */
 #include <stddef.h>         
 #include "freertos/FreeRTOS.h" 
 #include "freertos/task.h"     

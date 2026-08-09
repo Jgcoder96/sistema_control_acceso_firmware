@@ -1,3 +1,7 @@
+/**
+ * @file rtc_utils.c
+ * @brief Implementación de utilidades BCD.
+ */
 #include <stdint.h>
 
 // static const char *TAG = "RTC_UTILS";

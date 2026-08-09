@@ -1,3 +1,7 @@
+/**
+ * @file rtc_write_time_in_module.c
+ * @brief Implementación de la escritura manual al chip RTC por I2C.
+ */
 #include "driver/i2c.h"
 
 #include "rtc_config.h"

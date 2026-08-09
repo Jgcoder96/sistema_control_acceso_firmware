@@ -1,3 +1,7 @@
+/**
+ * @file nvs_offline_events.c
+ * @brief Implementación de la cola circular offline.
+ */
 #include "nvs_offline_events.h"
 #include "nvs_flash.h"
 #include "esp_log.h"
@@ -58,6 +62,7 @@ esp_err_t store_event_offline(access_event_t *event) {
   esp_err_t err = nvs_open(NVS_LOG_NS, NVS_READWRITE, &handle);
   if (err != ESP_OK) return err;
 
+  // Generar la llave (ej. "e_0", "e_1", "e_99")
   char key[12];
   snprintf(key, sizeof(key), "e_%u", idx.head);
     
@@ -67,10 +72,13 @@ esp_err_t store_event_offline(access_event_t *event) {
     return err;
   }
 
+  // Avanzar el índice (lógica circular)
   idx.head = (idx.head + 1) % MAX_OFFLINE_LOGS;
   if (idx.count < MAX_OFFLINE_LOGS) {
     idx.count++;
   } else {
+    // Si estaba lleno, al escribir en head pisamos el más viejo, 
+    // así que tail también avanza
     idx.tail = (idx.tail + 1) % MAX_OFFLINE_LOGS;
     ESP_LOGW(TAG, "[NVS] Memoria llena, sobreescribiendo evento antiguo.");
   }
@@ -93,6 +101,7 @@ esp_err_t pop_offline_event(access_event_t *out_event) {
   esp_err_t err = nvs_open(NVS_LOG_NS, NVS_READWRITE, &handle);
   if (err != ESP_OK) return err;
 
+  // Buscar la llave del evento más viejo
   char key[12];
   snprintf(key, sizeof(key), "e_%u", idx.tail);
     
@@ -100,6 +109,7 @@ esp_err_t pop_offline_event(access_event_t *out_event) {
   err = nvs_get_blob(handle, key, out_event, &size);
     
   if (err == ESP_OK) {
+    // Eliminarlo físicamente para liberar espacio
     nvs_erase_key(handle, key); 
     idx.tail = (idx.tail + 1) % MAX_OFFLINE_LOGS;
     idx.count--;

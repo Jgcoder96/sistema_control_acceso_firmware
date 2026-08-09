@@ -1,3 +1,7 @@
+/**
+ * @file nvs_sync_version.c
+ * @brief Tarea de paginación y negociación de permisos.
+ */
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "esp_log.h"
@@ -27,6 +31,7 @@ void nvs_sync_version(void *pvParameters) {
   app_packet_t packet;
 
   while (1) {
+    // Espera bloqueada hasta que alguien mande a sincronizar, o hasta que venza el timeout
     if (xSemaphoreTake(sync_trigger_sem, pdMS_TO_TICKS(SECURITY_TIMEOUT_MS)) == pdTRUE) {
       ESP_LOGI(TAG, "[NVS] Gatillo de sincronización activado.");
     } else {
@@ -38,12 +43,13 @@ void nvs_sync_version(void *pvParameters) {
         node_mesh_info.next_page_to_request = 1;
     }
 
-    
+    // Ciclo de peticiones: no sale de aquí hasta bajar toda la BD
     while (!node_mesh_info.is_synchronized) {
       nvs_handle_t handle;
       uint32_t current_version = 0;
       sync_state_t current_state = SYNC_STATE_NONE;
 
+      // Buscar si tenemos una versión previa para enviarla como ref
       esp_err_t err = nvs_open("storage", NVS_READONLY, &handle);
 
       if (err == ESP_OK) {       
@@ -65,6 +71,7 @@ void nvs_sync_version(void *pvParameters) {
 
       bool sent = false;
 
+      // Ruteo de la petición
       if (node_mesh_info.is_root) {
         if (node_mesh_info.is_mqtt_connected) {
           mqtt_publisher("device/sync/request", packet);
@@ -82,8 +89,11 @@ void nvs_sync_version(void *pvParameters) {
         ESP_LOGI(TAG, "[NVS] Petición V.%lu -> Pág %d enviada.", current_version, node_mesh_info.next_page_to_request);
       }
 
+      // Retardo aleatorio para evitar colisiones si varios piden al mismo tiempo
       uint32_t retry_ms = RETRY_DELAY_MIN_MS + (esp_random() % (RETRY_DELAY_MAX_MS - RETRY_DELAY_MIN_MS + 1));
       
+      // Si recibimos la página esperada, nvs_save_permissions liberará el semáforo
+      // Si no, vence el tiempo y repetimos el ciclo while
       if (xSemaphoreTake(sync_trigger_sem, pdMS_TO_TICKS(retry_ms)) == pdTRUE) {
           ESP_LOGI(TAG, "[NVS] Página recibida confirmada. Procesando siguiente paso...");
       } else {

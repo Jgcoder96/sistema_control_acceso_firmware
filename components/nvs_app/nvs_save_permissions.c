@@ -1,3 +1,7 @@
+/**
+ * @file nvs_save_permissions.c
+ * @brief Implementación del guardado de permisos en NVS.
+ */
 #include <stdio.h>     
 #include <stdint.h>     
 #include <string.h>    
@@ -29,6 +33,7 @@ static void notify_server_of_successful_save(uint32_t version, bool exito) {
   ack_packet.payload.sync_ack_event.success = exito;
     
 
+  // Si somos el Root, publicamos directo; si no, ruteamos por Mesh
   if (node_mesh_info.is_root) {
     mqtt_publisher("device/sync/successful", ack_packet);
   } else {
@@ -61,6 +66,8 @@ void nvs_save_permissions(const sync_data_event_t *sync_ev) {
 
     ESP_LOGW(TAG, "[NVS] Nueva Versión detectada. Limpiando NVS para nueva carga...");
 
+    // Como es una versión nueva y estamos en la primera página, 
+    // borramos la base de datos entera
     nvs_erase_all(handle);
     nvs_commit(handle);
 
@@ -74,6 +81,7 @@ void nvs_save_permissions(const sync_data_event_t *sync_ev) {
   size_t offset = 0;
   int contador = 0;
 
+  // Extraer las reglas tarjeta por tarjeta
   while (offset < sync_ev->permisos_len) {
     uint32_t tarjeta_id = *(uint32_t *)(p_ptr + offset);
     uint8_t num_reglas = *(uint8_t *)(p_ptr + offset + 4);
@@ -82,6 +90,7 @@ void nvs_save_permissions(const sync_data_event_t *sync_ev) {
     char key[16];
     snprintf(key, sizeof(key), "%lu", tarjeta_id);
 
+    // Guardar el bloque binario con las reglas de esa tarjeta
     nvs_set_blob(handle, key, (p_ptr + offset + 4), tam_reglas);
     offset += 4 + tam_reglas;
     contador++;
@@ -93,15 +102,17 @@ void nvs_save_permissions(const sync_data_event_t *sync_ev) {
   ESP_LOGI(TAG, "[NVS] 📄 Página %d/%d procesada. %d tarjetas añadidas.", sync_ev->current_page, sync_ev->total_pages, contador);
 
   if (sync_ev->current_page < sync_ev->total_pages) {
+    // Aún faltan páginas, pedimos la siguiente
     node_mesh_info.next_page_to_request = sync_ev->current_page + 1;
     node_mesh_info.is_synchronized = false;
 
+    // Disparar la tarea de sincronización para que envíe la petición
     if (sync_trigger_sem != NULL) xSemaphoreGive(sync_trigger_sem);
-    
     
     ESP_LOGI(TAG, "[NVS] ⏳ Solicitando página %d...", node_mesh_info.next_page_to_request);
 
   } else {
+    // Última página recibida, marcamos la nueva versión como completada
     if (nvs_open("storage", NVS_READWRITE, &handle) == ESP_OK) {
         nvs_set_u32(handle, "sync_ver", sync_ev->version);
         nvs_commit(handle);
@@ -111,6 +122,7 @@ void nvs_save_permissions(const sync_data_event_t *sync_ev) {
     node_mesh_info.is_synchronized = true;
     node_mesh_info.next_page_to_request = 1; 
 
+    // Enviar confirmación (ACK) al backend
     notify_server_of_successful_save(sync_ev->version, true);
     
     ESP_LOGI(TAG, "[NVS] 💾 SINCRONIZACIÓN TOTAL EXITOSA (V.%lu)", sync_ev->version);

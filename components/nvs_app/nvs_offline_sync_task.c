@@ -1,3 +1,7 @@
+/**
+ * @file nvs_offline_sync_task.c
+ * @brief Implementación de la tarea de sincronización de colas offline.
+ */
 #include "nvs_offline_sync_task.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -18,6 +22,7 @@ void offline_sync_task(void *pvParameters) {
   ESP_LOGI(TAG, "Tarea de sincronización offline iniciada.");
     
   while (1) {
+    // Si tenemos conexión completa hacia el backend, intentamos vaciar la cola
     if (node_mesh_info.is_mqtt_connected && node_mesh_info.is_mesh_connected) {        
       uint16_t pending = get_offline_event_count();  
       if (pending > 0) {
@@ -32,16 +37,19 @@ void offline_sync_task(void *pvParameters) {
             packet.msg_type = MSG_TYPE_CARD;
             packet.payload.access_event = event;
 
+            // Enviarlo hacia el Root o directamente al Backend
             send_upstream(&packet);
                         
             ESP_LOGI(TAG, "Evento offline enviado.");
  
+            // Esperar un poco para no saturar la red Mesh/MQTT de golpe
             vTaskDelay(pdMS_TO_TICKS(200));
           }
         }
         ESP_LOGI(TAG, "Sincronización finalizada.");
       }
     }    
+    // Comprobar cada 10 segundos
     vTaskDelay(pdMS_TO_TICKS(10000));
   }
 }

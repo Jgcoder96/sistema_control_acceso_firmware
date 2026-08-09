@@ -1,3 +1,7 @@
+/**
+ * @file nvs_get_version.c
+ * @brief Extrae la versión sincronizada actual.
+ */
 #include "nvs_flash.h"
 #include "nvs.h"
 
@@ -12,6 +16,7 @@ esp_err_t nvs_get_version(char* version, size_t length) {
     return err; 
   }
 
+  // Leer la cadena que corresponde a la llave sync_ver
   err = nvs_get_str(my_handle, "sync_ver", version, &length);
     
   nvs_close(my_handle);

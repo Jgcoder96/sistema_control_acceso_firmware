@@ -1,3 +1,7 @@
+/**
+ * @file mqtt_status_broadcast_task.c
+ * @brief Implementación del sistema de broadcasting del estado MQTT.
+ */
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -22,11 +26,14 @@ void send_mqtt_status_update(void) {
 
   ESP_LOGI(TAG, "[MQTT] Enviando actualización de estado MQTT: %s", mqtt_is_started ? "CONECTADO" : "DESCONECTADO");
              
+  // Distribuir el mensaje a toda la sub-red (broadcast)
   broadcast_to_mesh(&packet);
 }
 
 void mqtt_status_broadcast_task(void *pvParameters) {
   while (1) {
+    // Solo el Root debe emitir este broadcast, ya que es el único que
+    // gestiona la conexión real con el broker MQTT
     if (node_mesh_info.is_root == true) {
       send_mqtt_status_update();
     }

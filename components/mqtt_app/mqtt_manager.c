@@ -1,3 +1,7 @@
+/**
+ * @file mqtt_manager.c
+ * @brief Implementación del gestor de conexión MQTT.
+ */
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
@@ -24,11 +28,13 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
   switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
+      // Al conectarse, suscribirse automáticamente a los tópicos relevantes para el Root
       esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_SYNC_RESPONSE, 1);
       esp_mqtt_client_subscribe(event->client, SUBSCRIBE_IN_TOPIC_SYNC_TRIGGER, 1);
       break;
 
     case MQTT_EVENT_DATA: {
+      // Reservar memoria dinámicamente para el mensaje recibido
       mqtt_received_data_t *msg = malloc(sizeof(mqtt_received_data_t));
       if (msg == NULL) return;
 
@@ -38,6 +44,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         return;
       }
 
+      // Limitar la longitud del tópico para evitar desbordamientos
       int t_len = (event->topic_len >= 64) ? 63 : event->topic_len;
       memcpy(msg->topic, event->topic, t_len);
       msg->topic[t_len] = '\0';
@@ -46,7 +53,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
       msg->data[event->data_len] = '\0'; 
       msg->data_len = event->data_len;
 
-    
+      // Enviar el mensaje a la cola para que la tarea suscriptora lo procese
       if (xQueueSend(mqtt_subscription_queue, &msg, 0) != pdPASS) {
         free(msg->data);
         free(msg);
@@ -68,6 +75,7 @@ void mqtt_management_task(void *pvParameters) {
   esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
 
   while (1) {
+    // Solo iniciar MQTT si este nodo es la raíz de la red Mesh y tiene acceso a Internet
     bool condition_met = (node_mesh_info.is_internet_available && node_mesh_info.is_root);
       if (condition_met && !mqtt_is_started) {
         ESP_LOGI(TAG, "[MQTT] Dispositivo elegido como root y cuenta con conexión a Internet. Iniciando MQTT...");
@@ -77,6 +85,7 @@ void mqtt_management_task(void *pvParameters) {
         mqtt_is_started = true;
         node_mesh_info.is_mqtt_connected = true;
 
+        // Disparar sincronización inicial de permisos tras conectar
         nvs_sync_trigger();
 
         if (node_mesh_info.is_root == true) send_mqtt_status_update();

@@ -1,3 +1,7 @@
+/**
+ * @file mqtt_init.c
+ * @brief Implementación de la inicialización de MQTT.
+ */
 #include "mqtt_init.h"
 #include "mqtt_manager.h"
 #include "mqtt_subscriber.h"

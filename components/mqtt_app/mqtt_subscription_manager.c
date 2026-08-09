@@ -1,3 +1,7 @@
+/**
+ * @file mqtt_subscription_manager.c
+ * @brief Implementación de la lógica de negocio para los mensajes MQTT entrantes.
+ */
 #include "cJSON.h"
 #include "esp_log.h"
 #include <string.h> 
@@ -18,6 +22,7 @@ static const char *TAG = "MQTT_SUBSCRIPTION_MANAGER";
 void subscription_manager_sync_device(cJSON *root) {
   if (root == NULL) return;
 
+  // Extraer los campos principales del JSON
   cJSON *item = root;
   if (cJSON_IsArray(root)) item = cJSON_GetArrayItem(root, 0);
 
@@ -33,12 +38,14 @@ void subscription_manager_sync_device(cJSON *root) {
     return;
   }
 
+  // Decodificar la MAC objetivo, que viene en Base64 desde el backend
   uint8_t target_mac[6];
   size_t out_len_mac;
   mbedtls_base64_decode(target_mac, 6, &out_len_mac, (const unsigned char *)mac_b64->valuestring, strlen(mac_b64->valuestring));
 
   if (out_len_mac != 6) return;
   
+  // Preparar un paquete Mesh estandarizado para transportar los datos (o ruteos)
   app_packet_t packet;
   memset(&packet, 0, sizeof(app_packet_t));
   packet.msg_type = MSG_TYPE_SYNC_DATA;
@@ -51,6 +58,7 @@ void subscription_manager_sync_device(cJSON *root) {
   sync_ev->current_page = (uint16_t)curr_page->valueint; 
   sync_ev->total_pages = (uint16_t)tot_pages->valueint;   
 
+  // Decodificar los días festivos (festivos en base64) y almacenarlos en el búfer de datos
   size_t f_bytes = 0;
   if (cJSON_IsString(holidays_b64) && strlen(holidays_b64->valuestring) > 0) {
     mbedtls_base64_decode(sync_ev->data, sizeof(sync_ev->data), &f_bytes, (const unsigned char *)holidays_b64->valuestring, strlen(holidays_b64->valuestring));
@@ -58,6 +66,7 @@ void subscription_manager_sync_device(cJSON *root) {
 
   sync_ev->festivos_len = (uint16_t)f_bytes;
 
+  // Decodificar los permisos justo después de los festivos en el mismo búfer
   size_t p_bytes = 0;
   size_t space_left = sizeof(sync_ev->data) - f_bytes;
   if (cJSON_IsString(permissions_b64) && strlen(permissions_b64->valuestring) > 0) {
@@ -65,6 +74,7 @@ void subscription_manager_sync_device(cJSON *root) {
   }
   sync_ev->permisos_len = (uint16_t)p_bytes;
 
+  // Si el mensaje es para nosotros (las MAC coinciden), lo guardamos localmente
   if (memcmp(target_mac, node_mesh_info.mac, 6) == 0) {
     ESP_LOGI(TAG, "[MQTT] Página %d/%d recibida para Root", sync_ev->current_page, sync_ev->total_pages);
     
@@ -72,6 +82,7 @@ void subscription_manager_sync_device(cJSON *root) {
 
     nvs_save_permissions(sync_ev); 
 
+  // De lo contrario, lo encapsulamos en la red Mesh para el hijo destinatario
   } else {
     ESP_LOGI(TAG, "[MQTT] Ruteando Página %d/%d hacia Hijo", sync_ev->current_page, sync_ev->total_pages);
     packet.type = ROOT_TO_CHILD;
@@ -106,14 +117,13 @@ void subscription_manager_sync_trigger(cJSON *root) {
     
   packet.payload.sync_trigger_event.execute = true;
 
-    
+  // Si la petición de recarga es para este nodo, la ejecutamos
   if (memcmp(target_mac, node_mesh_info.mac, 6) == 0) {  
     sync_device_trigger();
 
+  // Si es para otro nodo, enrutar el trigger por la malla (Mesh)
   } else {
-
     packet.type = ROOT_TO_CHILD;
-
     send_downstream(&packet);
   }
 }

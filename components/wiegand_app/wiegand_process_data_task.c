@@ -1,3 +1,7 @@
+/**
+ * @file wiegand_process_data_task.c
+ * @brief Implementación del procesamiento lógico de tarjetas y permisos.
+ */
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "mqtt_client.h"
@@ -37,7 +41,9 @@ static bool is_today_holiday(struct tm *now) {
       int num_festivos = size / sizeof(festivo_t);
       festivo_t *lista = (festivo_t *)data;
 
+      // Buscar si el día de hoy coincide con algún festivo de la lista
       for (int i = 0; i < num_festivos; i++) {
+        // Si el año en NVS es 0, aplica para todos los años
         bool year_match = (lista[i].anio == 0) || (lista[i].anio == (now->tm_year + 1900));
                 
         if (lista[i].dia == now->tm_mday && lista[i].mes == (now->tm_mon + 1) && year_match) {
@@ -67,6 +73,7 @@ static bool validate_local_access(uint64_t full_id) {
   int dia_semana = (timeinfo.tm_wday == 0) ? 7 : timeinfo.tm_wday;
   bool hoy_es_festivo = is_today_holiday(&timeinfo);
     
+  // El tipo 0 suele significar "Día Festivo" en la BD. Si no, es del 1 (Lunes) al 7 (Domingo).
   uint8_t dia_a_validar = hoy_es_festivo ? 0 : (uint8_t)dia_semana;
 
   ESP_LOGI(TAG, "Validando: %s | Día Sem: %d | ¿Festivo?: %s", hoy_es_festivo ? "FESTIVO" : "NORMAL", dia_semana, hoy_es_festivo ? "SI" : "NO");
@@ -83,14 +90,16 @@ static bool validate_local_access(uint64_t full_id) {
       regla_t *reglas = (regla_t *)(buffer + 1);
 
       for (int i = 0; i < num_reglas; i++) {
+        // ¿Aplica para el día de hoy?
         if (reglas[i].dia_tipo == dia_a_validar) {
+          // Convertir todo a segundos desde medianoche para comparar fácil
           uint32_t seg_ahora = (timeinfo.tm_hour * 3600) + (timeinfo.tm_min * 60) + timeinfo.tm_sec;
           uint32_t seg_inicio = (reglas[i].h_i * 3600) + (reglas[i].m_i * 60) + reglas[i].s_i;
           uint32_t seg_fin = (reglas[i].h_f * 3600) + (reglas[i].m_f * 60) + reglas[i].s_f;
 
           if (seg_ahora >= seg_inicio && seg_ahora <= seg_fin) {
             permitted = true;
-            break;
+            break; // Si hay al menos una regla que permita, ya puede entrar
           }
         }
       }

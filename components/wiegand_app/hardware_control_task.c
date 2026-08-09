@@ -1,3 +1,7 @@
+/**
+ * @file hardware_control_task.c
+ * @brief Implementación del accionamiento físico (Relé/LEDs).
+ */
 #include <stdbool.h>       
 #include "freertos/FreeRTOS.h" 
 #include "freertos/task.h"   
@@ -19,19 +23,24 @@ void hardware_control_task(void *pvParameters) {
   hardware_cmd_t action;
 
   while (1) {
+    // Esperar comandos desde la tarea de procesamiento
     if (xQueueReceive(hardware_control_queue, &action, portMAX_DELAY) == pdTRUE) {
       if (action.permitted) {
+        // Acceso Permitido: Relé ON, LED Verde ON, LED Rojo OFF
         gpio_set_level(PIN_RELE, 1);
         gpio_set_level(PIN_LED_L2, 1);
         gpio_set_level(PIN_LED_L1, 0);
       } else {
+        // Acceso Denegado: Relé OFF, LED Verde OFF, LED Rojo ON
         gpio_set_level(PIN_RELE, 0);
         gpio_set_level(PIN_LED_L2, 0);
         gpio_set_level(PIN_LED_L1, 1);
       }
 
+      // Mantener el estado por 3 segundos
       vTaskDelay(pdMS_TO_TICKS(3000));
 
+      // Volver a estado de reposo (Todo apagado)
       gpio_set_level(PIN_RELE, 0);
       gpio_set_level(PIN_LED_L2, 0);
       gpio_set_level(PIN_LED_L1, 0);

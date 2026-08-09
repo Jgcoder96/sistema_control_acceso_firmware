@@ -1,3 +1,7 @@
+/**
+ * @file wiegand_setup.c
+ * @brief Implementación de interrupciones de hardware Wiegand.
+ */
 #include "driver/gpio.h"
 
 #include "wiegand_internal.h"
@@ -7,13 +11,18 @@
 
 wiegand_context_t *g_wiegand_ctx = NULL;
 
+// Rutina de Servicio de Interrupción (ISR)
+// Se dispara rapidísimo cada vez que D0 o D1 bajan a 0V.
 static void IRAM_ATTR wiegand_isr_handler(void* received_bit) {
   if (g_wiegand_ctx == NULL) return;
-  uint32_t value_bit = (uint32_t)received_bit;
+  uint32_t value_bit = (uint32_t)received_bit; // 0 o 1
+  
+  // Bloqueo Spinlock para evitar corrupción si otra tarea interrumpe
   portENTER_CRITICAL_ISR(&g_wiegand_ctx->mux);
+  // Rodamos todo a la izquierda y metemos el bit nuevo a la derecha
   g_wiegand_ctx->bit_buffer = (g_wiegand_ctx->bit_buffer << 1) | value_bit;
   g_wiegand_ctx->bit_count++;
-  g_wiegand_ctx->last_bit_time_us = esp_timer_get_time();
+  g_wiegand_ctx->last_bit_time_us = esp_timer_get_time(); // Reiniciar el timeout
   portEXIT_CRITICAL_ISR(&g_wiegand_ctx->mux);
 } 
 
